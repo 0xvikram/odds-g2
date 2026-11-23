@@ -1,3 +1,4 @@
+// Odds, day 1: hold the touchpad (or R1 ring) to speak; release to transcribe.
 import {
   waitForEvenAppBridge,
   TextContainerProperty,
@@ -5,157 +6,79 @@ import {
   TextContainerUpgrade,
   OsEventTypeList,
 } from '@evenrealities/even_hub_sdk'
-import { startSttStream } from './asr/stt'
+import { PushToTalk, transcribe } from './voice'
 import { mountUi, setStatus, setTranscript } from './ui'
 
 mountUi()
-
-const API_KEY = import.meta.env.VITE_STT_API_KEY as string
-if (!API_KEY) {
-  setStatus('error', 'VITE_STT_API_KEY not set — copy .env.example to .env.local')
-  console.warn('VITE_STT_API_KEY is not set.')
-}
-
 const bridge = await waitForEvenAppBridge()
 
-const transcript = new TextContainerProperty({
-  xPosition: 0,
-  yPosition: 0,
-  width: 576,
-  height: 288,
-  borderWidth: 0,
-  borderColor: 5,
-  paddingLength: 4,
-  containerID: 1,
-  containerName: 'transcript',
-  content: 'Listening…',
-  isEventCapture: 1,
+const IDLE = 'ODDS\n\nHold to speak.\nTry: "follow the Fed decision"\n\nDouble-tap to exit.'
+const screen = new TextContainerProperty({
+  xPosition: 0, yPosition: 0, width: 576, height: 288,
+  borderWidth: 0, borderColor: 5, paddingLength: 8,
+  containerID: 1, containerName: 'main', content: IDLE, isEventCapture: 1,
+})
+const created = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer({ containerTotalNum: 1, textObject: [screen] }))
+if (created !== 0) setStatus('error', `createStartUpPageContainer failed: ${created}`)
+
+let shown = IDLE
+async function show(text: string) {
+  if (text === shown) return
+  shown = text
+  await bridge.textContainerUpgrade(new TextContainerUpgrade({ containerID: 1, containerName: 'main', content: text }))
+}
+
+const ptt = new PushToTalk()
+setStatus('paused', 'Hold the touchpad or ring to speak · double-tap to exit')
+
+async function startTalking() {
+  if (ptt.recording) return
+  ptt.start()
+  await bridge.audioControl(true)
+  await show('● Listening…')
+  setStatus('listening', 'Listening… release to send')
+  console.log('[odds] listening')
+}
+
+async function stopTalking() {
+  if (!ptt.recording) return
+  await bridge.audioControl(false)
+  const clip = ptt.stop()
+  if (clip === 'short') { await show(IDLE); setStatus('paused', 'Too short. Hold while you speak.'); return }
+  if (clip === 'silent') { await show("Didn't hear anything.\nHold, speak, then let go."); setStatus('paused', 'No speech picked up by the mic'); return }
+  await show('○ Thinking…')
+  try {
+    const text = await transcribe(clip)
+    console.log('[odds] heard:', text)
+    setTranscript(text, '')
+    await show(text ? `Heard:\n"${text}"` : "Didn't catch that.\nTry: \"follow the Fed decision\"")
+    setStatus('paused', 'Hold to speak again')
+  } catch (e) {
+    console.error('[odds] stt failed', e)
+    await show('Speech service unavailable.\nTry again in a moment.')
+    setStatus('error', String((e as Error).message ?? e))
+  }
+}
+
+// CLICK_EVENT is 0 and protobuf drops zero values, so a present envelope with no eventType is a click.
+const typeOf = (env?: { eventType?: OsEventTypeList }) => (env ? env.eventType ?? OsEventTypeList.CLICK_EVENT : null)
+
+const unsubscribe = bridge.onEvenHubEvent((event) => {
+  const pcm = event.audioEvent?.audioPcm
+  if (pcm) { ptt.push(pcm); return }
+  const types = [typeOf(event.sysEvent), typeOf(event.textEvent), typeOf(event.listEvent)]
+  const is = (t: OsEventTypeList) => types.includes(t)
+  if (is(OsEventTypeList.DOUBLE_CLICK_EVENT)) { bridge.shutDownPageContainer(1); return }
+  if (is(OsEventTypeList.LONG_PRESS_EVENT)) { void startTalking(); return }
+  if (is(OsEventTypeList.LONG_PRESS_RELEASE_EVENT)) { void stopTalking(); return }
+  if (is(OsEventTypeList.SYSTEM_EXIT_EVENT) || is(OsEventTypeList.ABNORMAL_EXIT_EVENT)) cleanup()
 })
 
-const created = await bridge.createStartUpPageContainer(
-  new CreateStartUpPageContainer({ containerTotalNum: 1, textObject: [transcript] }),
-)
-if (created !== 0) {
-  setStatus('error', `createStartUpPageContainer failed: ${created}`)
-  console.error('Failed to create startup page')
-}
-
-let lastRender = ''
-let renderTimer: number | null = null
-let currentContent = 'Listening…'
-
-function scheduleGlassesRender() {
-  if (renderTimer !== null) return
-  renderTimer = window.setTimeout(async () => {
-    renderTimer = null
-    if (currentContent === lastRender) return
-    lastRender = currentContent
-    await bridge.textContainerUpgrade(
-      new TextContainerUpgrade({
-        containerID: 1,
-        containerName: 'transcript',
-        content: currentContent,
-      }),
-    )
-  }, 120) // debounce display writes — BLE render queue is slow
-}
-
-// The default stt.ts is a blank stub that throws. Catch the throw so the UI
-// surfaces the "configure stt.ts" error chip instead of hanging on "Connecting…".
-let stt: ReturnType<typeof startSttStream> | null = null
-try {
-  stt = startSttStream(
-    API_KEY,
-    ({ finalText, interimText }) => {
-      const combined = (finalText + interimText).trim()
-      // 240 chars is a rough fit for the 576x288 text container at default font.
-      currentContent = combined ? combined.slice(-240) : 'Listening…'
-      setTranscript(finalText, interimText)
-      scheduleGlassesRender()
-    },
-    err => {
-      setStatus('error', `STT error: ${(err as Error)?.message ?? err}`)
-      console.error('STT error:', err)
-    },
-  )
-} catch (err) {
-  setStatus('error', (err as Error)?.message ?? 'STT startup failed')
-  console.error('STT startup failed:', err)
-}
-
-let micOn = false
-if (stt) {
-  await bridge.audioControl(true)
-  micOn = true
-  setStatus('listening', 'Microphone live · tap to pause · double-tap to exit')
-}
-
-// Tap toggles capture. `audioControl(false)` stops the host pushing PCM, so no
-// further frames reach `sendPcm`; the STT client itself is left open. If your
-// provider closes an idle stream, tear it down here and reopen it on resume.
-// No-ops until stt.ts is wired up — there is no capture to pause.
-function toggleMic() {
-  if (!stt) return
-  micOn = !micOn
-  bridge.audioControl(micOn)
-  currentContent = micOn ? 'Listening…' : 'Paused'
-  scheduleGlassesRender()
-  setStatus(
-    micOn ? 'listening' : 'paused',
-    micOn ? 'Microphone live · tap to pause · double-tap to exit' : 'Paused · tap to resume · double-tap to exit',
-  )
-}
-
-let cleanedUp = false
+let cleaned = false
 function cleanup() {
-  if (cleanedUp) return
-  cleanedUp = true
-  bridge.audioControl(false)
-  stt?.close()
+  if (cleaned) return
+  cleaned = true
+  void bridge.audioControl(false)
   unsubscribe()
 }
-
-// Reads the event type out of one envelope.
-//
-// CLICK_EVENT is 0, and protobuf omits zero-value fields on the wire, so a
-// single tap arrives as an envelope whose `eventType` is `undefined`. The
-// default has to be resolved INSIDE the envelope check. Writing
-// `event.sysEvent?.eventType ?? OsEventTypeList.CLICK_EVENT` instead would
-// read CLICK on events that carry no `sysEvent` at all — and in this template
-// that means every incoming audio frame would fire the tap handler.
-function eventTypeOf(envelope?: { eventType?: OsEventTypeList }): OsEventTypeList | null {
-  if (!envelope) return null
-  return envelope.eventType ?? OsEventTypeList.CLICK_EVENT
-}
-
-// Event routing, critical details:
-//   • Taps/double-taps/lifecycle come through `event.sysEvent`.
-//     Audio PCM frames come through `event.audioEvent` — separate branch.
-//   • Double-tap → `shutDownPageContainer(1)` is a root-level check: it
-//     must fire no matter which envelope the event arrives in, so users
-//     can always exit the app. System exit confirmation dialog appears;
-//     SYSTEM_EXIT_EVENT fires on confirm and we clean up there.
-//   • Check DOUBLE_CLICK_EVENT before CLICK_EVENT.
-const unsubscribe = bridge.onEvenHubEvent(event => {
-  const pcm = event.audioEvent?.audioPcm
-  if (pcm) stt?.sendPcm(pcm)
-
-  const sysType = eventTypeOf(event.sysEvent)
-  const textType = eventTypeOf(event.textEvent)
-
-  if (sysType === OsEventTypeList.DOUBLE_CLICK_EVENT || textType === OsEventTypeList.DOUBLE_CLICK_EVENT) {
-    bridge.shutDownPageContainer(1)
-    return
-  }
-
-  if (sysType === OsEventTypeList.CLICK_EVENT || textType === OsEventTypeList.CLICK_EVENT) {
-    toggleMic()
-    return
-  }
-
-  if (sysType === OsEventTypeList.SYSTEM_EXIT_EVENT || sysType === OsEventTypeList.ABNORMAL_EXIT_EVENT) {
-    cleanup()
-  }
-})
-
 window.addEventListener('beforeunload', cleanup)
