@@ -15,7 +15,7 @@ import { mountUi, setStatus, setTranscript } from './ui'
 import { parse, matchOutcome, type Intent } from './parse'
 import { getEvent, cachedEvent, search, getHistory, getNews, type EventData, type SearchHit, type Headline } from './api'
 import * as store from './store'
-import { card, confirmText, positionsText, watchRow, header, lead, nameOf, cut, RULE } from './screens'
+import { card, confirmText, positionsText, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
 
 mountUi()
 const bridge = await waitForEvenAppBridge()
@@ -90,7 +90,7 @@ async function showHome(note = '') {
 
 async function showSearch(query: string, hits: SearchHit[]) {
   screen = { name: 'search', query, hits }
-  await listPage(`Pick one · "${cut(query, 24)}"`, hits.map((h) => `${cut(h.title, 40)} ${Math.round(h.top.price * 100)}%`))
+  await listPage(`Pick one · "${cut(query, 24)}"`, hits.map((h) => `${shortTitle(h.title, 30)}: ${cut(h.top.label, 16)} ${pct(h.top.price)}`))
 }
 
 async function showCard(id: string, note = '') {

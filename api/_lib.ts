@@ -57,3 +57,7 @@ export function slimMarket(m: any) {
     volume24h: num(m.volume24hr),
   }
 }
+
+/** Polymarket keeps unpriced slots ("Other", "Team H" at 50%, no volume) on some events: never treat them as the leader. */
+export const isPlaceholder = (m: { label: string; prices: number[]; volume24h: number | null }) =>
+  /^(other|team [a-z])$/i.test(m.label.trim()) || (m.prices[0] === 0.5 && !m.volume24h)

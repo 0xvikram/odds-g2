@@ -1,5 +1,5 @@
 // GET /api/search?q=fed+december  →  { events: [{ id, title, endDate, top: {label, price} }] } (max 3, active only)
-import { GAMMA, getJson, json, preflight, slimMarket } from './_lib.js'
+import { GAMMA, getJson, isPlaceholder, json, preflight, slimMarket } from './_lib.js'
 
 export function OPTIONS() { return preflight() }
 
@@ -12,7 +12,8 @@ export async function GET(req: Request) {
       .filter((e: any) => e.active && !e.closed)
       .map((e: any) => {
         const markets = (e.markets ?? []).map(slimMarket).filter(Boolean) as ReturnType<typeof slimMarket>[]
-        const top = markets.sort((a, b) => b!.prices[0] - a!.prices[0])[0]
+        const real = markets.filter((m) => !isPlaceholder(m!))
+        const top = (real.length ? real : markets).sort((a, b) => b!.prices[0] - a!.prices[0])[0]
         return top ? { id: String(e.id), title: String(e.title), endDate: e.endDate ?? null, top: { label: top.label, price: top.prices[0] } } : null
       })
       .filter(Boolean)
