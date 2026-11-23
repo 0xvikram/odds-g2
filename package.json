@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "pack": "npm run build && evenhub pack app.json dist",
-    "simulate": "evenhub-simulator --automation-port 9898 http://127.0.0.1:5191"
+    "simulate": "evenhub-simulator --aid coreaudio:BuiltInMicrophoneDevice --automation-port 9898 http://127.0.0.1:5191",
+    "test": "node --import tsx --test src/*.test.ts"
   },
   "dependencies": {
     "@evenrealities/even_hub_sdk": "^0.0.16"
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@evenrealities/evenhub-cli": "^0.2.0",
     "@types/node": "^22.20.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.0",
     "vite": "^5.4.0"
   }
