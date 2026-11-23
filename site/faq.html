@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0a0c0b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>FAQ · Odds</title>
+    <meta name="description" content="Questions about Odds, the live Polymarket odds app for Even Realities G2 glasses." />
+  </head>
+  <body>
+    <header class="nav"><div class="wrap">
+      <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#111513"/><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="5" fill="#3cfa44"/></svg> Odds</a>
+      <nav class="links"><a href="/#how">How it works</a><a href="/#safety">Safety</a><a href="/faq">FAQ</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a><a class="btn btn-go" href="/try">Try it</a></nav>
+    </div></header>
+    <main class="prose">
+      <span class="eyebrow">FAQ</span>
+      <h1>Questions</h1>
+      <details open><summary>What is Odds?</summary><p>An app for Even Realities G2 smart glasses that shows live Polymarket prediction-market prices. You pick markets by voice, glance at the price and its 24-hour line, see the headline behind a big move, and place paper bets.</p></details>
+      <details><summary>Do I need G2 glasses?</summary><p>Not to try it. <a href="/try">The simulator</a> runs the same app code on a 576 × 288 display in your browser, with buttons for the ring and your microphone for voice.</p></details>
+      <details><summary>Is any real money involved?</summary><p>No. Bets are paper: a ledger on your device, priced at the live market price, with live profit and loss. Odds has no wallet, holds no keys and places no orders.</p></details>
+      <details><summary>Where do the prices come from?</summary><p>Polymarket's public market data, read through the Odds backend. The open card refreshes every 15 seconds; the 24-hour line uses hourly prices. Resolved markets and unpriced placeholder outcomes are left out.</p></details>
+      <details><summary>How does voice work?</summary><p>Hold the ring or touchpad, speak, let go. The clip goes to the Odds backend, which transcribes it with Whisper on Groq and returns the text. Clips that are too short or silent are never sent. A fixed rule set, not an AI model, turns the text into an action, so a stake or an outcome is never guessed.</p></details>
+      <details><summary>Where do the “why did it move” headlines come from?</summary><p>Google News search results from the last 24 hours that name the market, ranked by how closely they match. The card shows the outlet and how long ago it was published. A headline is the news nearest the move, not proof of what caused it. If nothing matches, the card says so.</p></details>
+      <details><summary>What can I say?</summary><p>“follow the Fed decision”, “what's bitcoin doing?”, “why did it move?”, “20 on no change”, “yes, place it”, “close it”, “positions”, “alert at 3 points”, “stop watching”, “go back”.</p></details>
+      <details><summary>Which languages?</summary><p>English for now.</p></details>
+      <details><summary>Is it open source?</summary><p>Yes, MIT licensed: <a href="https://github.com/0xvikram/odds-g2">github.com/0xvikram/odds-g2</a>.</p></details>
+    </main>
+    <footer><div class="wrap">
+      <div>Odds · live prediction-market odds for Even Realities G2.<br />Paper bets only. Not affiliated with Polymarket or Even Realities.</div>
+      <nav><a href="/try">Try it</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a></nav>
+    </div></footer>
+  </body>
+</html>

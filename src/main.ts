@@ -284,6 +284,12 @@ async function stopTalking() {
   }
 }
 
+// The browser simulator on the product site types commands; they take the same path as speech.
+;(globalThis as { oddsSay?: (text: string) => Promise<void> }).oddsSay = async (text: string) => {
+  setTranscript(text, '')
+  await act(parse(text), text)
+}
+
 // ───────────────────────────── input ─────────────────────────────
 
 const typeOf = (env?: { eventType?: OsEventTypeList }) => (env ? env.eventType ?? OsEventTypeList.CLICK_EVENT : null)

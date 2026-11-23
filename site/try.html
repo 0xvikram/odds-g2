@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0a0c0b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Try Odds in your browser</title>
+    <meta name="description" content="The real Odds G2 app on a simulated 576×288 display. Hold to talk or type a command: live Polymarket odds, headlines and paper bets." />
+    <meta property="og:title" content="Try Odds in your browser" />
+    <meta property="og:image" content="https://odds-g2.vercel.app/og.png" />
+  </head>
+  <body>
+    <header class="nav"><div class="wrap">
+      <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#111513"/><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="5" fill="#3cfa44"/></svg> Odds</a>
+      <nav class="links"><a href="/#how">How it works</a><a href="/#safety">Safety</a><a href="/faq">FAQ</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a><a class="btn btn-go" href="/try">Try it</a></nav>
+    </div></header>
+    <main class="try"><div class="wrap">
+      <div>
+        <span class="eyebrow">Simulator · real app, real prices</span>
+        <h1>Odds on a simulated G2</h1>
+        <p class="muted" style="margin-bottom:22px">This is the app's own code on a 576 × 288 display. The buttons below are the ring.</p>
+        <div class="lens-frame">
+          <div class="lens-box"><div class="lens" id="lens" aria-live="polite"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">Loading…</div></div></div>
+        </div>
+        <div class="bar"><span id="sim-status">Connecting…</span><span id="sim-heard"></span></div>
+        <p class="note" id="sim-note" hidden></p>
+        <div class="pad">
+          <button type="button" id="talk">Hold to talk<small>or hold Space</small></button>
+          <button type="button" data-act="up">Swipe ↑<small>↑ key</small></button>
+          <button type="button" data-act="down">Swipe ↓<small>↓ key</small></button>
+          <button type="button" data-act="click">Tap<small>Enter</small></button>
+          <button type="button" data-act="double_click">Double-tap<small>Esc · back</small></button>
+        </div>
+      </div>
+      <aside>
+        <div class="side">
+          <h3>Type a command</h3>
+          <form id="say" autocomplete="off"><input type="text" placeholder="follow the Fed decision" aria-label="Command" /><button class="btn btn-go" type="submit">Say</button></form>
+          <div class="chips">
+            <button type="button" data-say="what's bitcoin doing">what's bitcoin doing</button>
+            <button type="button" data-say="follow the Fed decision">follow the Fed decision</button>
+            <button type="button" data-say="why did it move">why did it move</button>
+            <button type="button" data-say="20 on no change">20 on no change</button>
+            <button type="button" data-say="yes, place it">yes, place it</button>
+            <button type="button" data-say="positions">positions</button>
+            <button type="button" data-say="go back">go back</button>
+          </div>
+        </div>
+        <div class="side">
+          <h3>A one-minute tour</h3>
+          <ol class="tour">
+            <li><b>Tap</b> a row on the watchlist to open it.</li>
+            <li><b>Swipe ↑ ↓</b> to move between markets.</li>
+            <li>Open the Fed decision, say <b>“why did it move”</b>.</li>
+            <li>Say <b>“20 on no change”</b>, then <b>Tap</b> “Yes, place it”.</li>
+            <li><b>Double-tap</b> to go back to the watchlist.</li>
+          </ol>
+          <p class="small muted" style="margin-top:14px">Holding to talk asks for your microphone. The clip goes to our backend for speech-to-text and is not stored. Bets are paper and live in this browser only. <a href="/privacy">Privacy</a></p>
+        </div>
+      </aside>
+    </div></main>
+    <footer><div class="wrap">
+      <div>Odds · live prediction-market odds for Even Realities G2.<br />Paper bets only. Not affiliated with Polymarket or Even Realities.</div>
+      <nav><a href="/try">Try it</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a></nav>
+    </div></footer>
+    <script type="module" src="/sim/try.ts"></script>
+  </body>
+</html>

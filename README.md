@@ -3,13 +3,14 @@
 **Live prediction-market odds on Even Realities G2 glasses, by voice.**
 
 Big events move markets while you're walking. Odds puts the live number in front of your eyes: follow an
-event by voice, glance at its odds and 24-hour trend, get a line when it moves, and place a paper bet
+event by voice, glance at its odds and 24-hour trend, see the headline behind a big move, and place a paper bet
 with one tap to confirm.
 
 Built for the DoraHacks "Heads Up: Even Realities G2" hackathon, track **02 Crypto & DeFi** (Polymarket,
 read-only data and paper trading only).
 
-> Work in progress. Day 1: backend and push-to-talk.
+**Try it without glasses: https://odds-g2.vercel.app/try** (the real app code on a simulated 576×288 display).
+Product site: https://odds-g2.vercel.app
 
 ## How it works
 
@@ -19,9 +20,12 @@ read-only data and paper trading only).
  hold touchpad/ring → mic PCM 16 kHz ──WAV──▶ /api/stt ─────────────────────────────▶ Groq Whisper
  voice intent → follow / bet / positions      /api/search, /api/event ──────────────▶ Polymarket Gamma
  glanceable cards, live every 15 s     ◀────  /api/history (24 h sparkline) ────────▶ Polymarket CLOB
+ "why did it move?" / move ≥ alert line       /api/news (headlines, last 24 h) ──────▶ Google News RSS
  paper ledger on the device
 ```
 
+- Site: `npm run dev:site` / `npm run build:site` (Vercel builds this). The glasses package is still `npm run pack`.
+  On `/try`, `src/main.ts` runs unchanged against `site/sim/sdk.ts`, a stand-in for the Even Hub SDK.
 - No API keys on the glasses: speech-to-text runs on the backend.
 - Read-only market data; bets are paper only and never leave the device.
 - The backend proxies Polymarket because its hosts are unreliable or blocked in some regions.

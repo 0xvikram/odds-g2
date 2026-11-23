@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:site": "vite --config vite.site.config.ts",
     "build": "tsc --noEmit && vite build",
+    "build:site": "tsc --noEmit -p tsconfig.site.json && vite build --config vite.site.config.ts",
     "preview": "vite preview",
     "pack": "npm run build && evenhub pack app.json dist",
     "simulate": "evenhub-simulator --aid coreaudio:BuiltInMicrophoneDevice --automation-port 9898 http://127.0.0.1:5191",

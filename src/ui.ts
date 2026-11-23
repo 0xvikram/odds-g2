@@ -9,13 +9,13 @@ export function mountUi() {
   app.innerHTML = `
     <main class="panel">
       <header>
-        <h1>ASR Demo</h1>
+        <h1>Odds</h1>
         <div id="status" class="status status-connecting">Connecting…</div>
       </header>
       <section class="transcript" aria-live="polite">
         <span id="final"></span><span id="interim" class="interim"></span>
       </section>
-      <footer>Tap the glasses temple to pause · double-tap to exit.</footer>
+      <footer>Hold the touchpad or ring to speak · double-tap to go back.</footer>
     </main>
   `
   statusEl = app.querySelector<HTMLDivElement>('#status')!

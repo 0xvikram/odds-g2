@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0a0c0b" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>Privacy · Odds</title>
+    <meta name="description" content="What Odds stores and sends." />
+  </head>
+  <body>
+    <header class="nav"><div class="wrap">
+      <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#111513"/><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="5" fill="#3cfa44"/></svg> Odds</a>
+      <nav class="links"><a href="/#how">How it works</a><a href="/#safety">Safety</a><a href="/faq">FAQ</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a><a class="btn btn-go" href="/try">Try it</a></nav>
+    </div></header>
+    <main class="prose">
+      <span class="eyebrow">Privacy</span>
+      <h1>What Odds keeps and sends</h1>
+      <p>Odds has no accounts, no cookies and no analytics. Last updated 24 November 2026.</p>
+      <h2>Kept on your device</h2>
+      <ul>
+        <li>The markets you follow.</li>
+        <li>Your paper bets and their prices.</li>
+        <li>Your alert line.</li>
+      </ul>
+      <p>These live in the app's local storage (on the site, your browser's). They never reach our servers. Clearing site data removes them.</p>
+      <h2>Sent while you use it</h2>
+      <ul>
+        <li><b>Voice clips</b>, only while you hold to talk, to the Odds backend, which forwards them to Groq for speech-to-text. We don't store the clip or the text.</li>
+        <li><b>Market searches and ids</b> to the Odds backend, which asks Polymarket's public API.</li>
+        <li><b>Market titles</b> to the Odds backend, which searches Google News for headlines.</li>
+      </ul>
+      <p>The backend runs on Vercel, which keeps standard request logs (such as IP address and time) for a short period. Groq, Polymarket and Google receive requests from our backend, not from your device.</p>
+      <h2>Contact</h2>
+      <p>Open an issue at <a href="https://github.com/0xvikram/odds-g2/issues">github.com/0xvikram/odds-g2</a>.</p>
+    </main>
+    <footer><div class="wrap">
+      <div>Odds · live prediction-market odds for Even Realities G2.<br />Paper bets only. Not affiliated with Polymarket or Even Realities.</div>
+      <nav><a href="/try">Try it</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a></nav>
+    </div></footer>
+  </body>
+</html>
