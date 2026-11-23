@@ -1,5 +1,5 @@
 // Text for each glasses screen. 576×288 display, one font, ~42 characters a line, no emoji.
-import type { EventData, Market } from './api'
+import type { EventData, Market, Headline } from './api'
 import type { Position } from './store'
 import { pnlAt } from './store'
 
@@ -62,7 +62,28 @@ export function header(left: string, right = ''): string {
   return `${cut(left, 30)}${right ? '  ' + right : ''}   ${clock}`
 }
 
-export function card(e: EventData, history: number[] | null, alertPts: number, note = ''): string {
+/** "2h ago", "35m ago" */
+export function ago(at: number, now = Date.now()): string {
+  const m = Math.max(0, Math.round((now - at) / 60000))
+  return m < 60 ? `${m}m ago` : `${Math.round(m / 60)}h ago`
+}
+
+/** Splits text into at most `lines` lines of `width` characters, the last one cut with "…". */
+export function wrap(text: string, width: number, lines: number): string[] {
+  const out: string[] = []
+  let cur = ''
+  for (const w of text.replace(/\s+/g, ' ').trim().split(' ')) {
+    if (!cur) cur = w
+    else if ((cur + ' ' + w).length <= width) cur += ' ' + w
+    else { out.push(cur); cur = w }
+  }
+  if (cur) out.push(cur)
+  if (out.length > lines) { out.length = lines; out[lines - 1] = cut(out[lines - 1] + ' …', width) }
+  return out.map((l) => cut(l, width))
+}
+
+/** news: undefined = not asked, null = loading, [] = nothing found, else the newest headline is shown. */
+export function card(e: EventData, history: number[] | null, alertPts: number, note = '', news?: Headline[] | null): string {
   const m = lead(e)
   const lines = [cut(e.title.toUpperCase(), 40)]
   if (!m) return [...lines, '', 'This market has closed.', '', 'Double-tap: back'].join('\n')
@@ -75,7 +96,17 @@ export function card(e: EventData, history: number[] | null, alertPts: number, n
   if (others.length) lines.push(cut(others.join(' · '), 44))
   lines.push(RULE)
   const moved = m.change1h != null && Math.abs(m.change1h * 100) >= alertPts
-  lines.push(note || (moved ? `! Moved ${Math.round(Math.abs(m.change1h! * 100))} pts in 1h` : `Alert at ${alertPts} pts in 1h`))
+  const status = moved ? `! Moved ${Math.round(Math.abs(m.change1h! * 100))} pts in 1h` : `Alert at ${alertPts} pts in 1h`
+  if (note) lines.push(note)
+  else if (news === undefined) lines.push(status)
+  else if (news === null) lines.push(`${status} · Checking news…`)
+  else if (!news.length) lines.push(`${status} · No news in 24h`)
+  else {
+    const h = news[0]
+    lines.push(cut(`${moved ? status + ' · ' : 'NEWS · '}${h.source}, ${ago(h.at)}`, 44))
+    lines.push(...wrap(`"${h.title}"`, 42, 2))
+    return lines.join('\n') // the headline takes the help line's place
+  }
   lines.push('Hold: speak · Swipe: next · 2×tap: back')
   return lines.join('\n')
 }

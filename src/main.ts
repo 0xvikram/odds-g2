@@ -13,7 +13,7 @@ import {
 import { PushToTalk, transcribe } from './voice'
 import { mountUi, setStatus, setTranscript } from './ui'
 import { parse, matchOutcome, type Intent } from './parse'
-import { getEvent, cachedEvent, search, getHistory, type EventData, type SearchHit } from './api'
+import { getEvent, cachedEvent, search, getHistory, getNews, type EventData, type SearchHit, type Headline } from './api'
 import * as store from './store'
 import { card, confirmText, positionsText, watchRow, header, lead, nameOf, cut, RULE } from './screens'
 
@@ -31,6 +31,8 @@ let screen: Screen = { name: 'home' }
 let listItems: string[] = [] // what the current list shows, to map a tap back to an action
 let headerText = ''
 let lastInput = 0
+/** Headlines for the open card: shown when it moves past the alert line, or when asked "why". */
+let news: { id: string; items: Headline[] | null } | null = null
 
 // ───────────────────────────── page building ─────────────────────────────
 
@@ -101,9 +103,20 @@ async function showCard(id: string, note = '') {
   const m = lead(e)
   const hist = m?.yesToken ? await getHistory(m.yesToken).catch(() => null) : null
   if (screen.name !== 'card' || screen.id !== id) return
-  const text = card(e, hist, store.getAlertPts(), note)
+  const moved = m?.change1h != null && Math.abs(m.change1h * 100) >= store.getAlertPts()
+  if (moved && news?.id !== id) void loadNews(id, e.title)
+  const text = card(e, hist, store.getAlertPts(), note, news?.id === id ? news.items : undefined)
   if (listItems.length || !cached || headerText === 'Loading…') await textPage(text)
   else await upgrade(text)
+}
+
+async function loadNews(id: string, title: string) {
+  news = { id, items: null }
+  const items = await getNews(title).catch(() => [] as Headline[])
+  if (news?.id !== id) return
+  news = { id, items }
+  console.log('[odds] news', title, items[0]?.title ?? '(none)')
+  if (screen.name === 'card' && screen.id === id) await showCard(id)
 }
 
 async function showConfirm(c: Extract<Screen, { name: 'confirm' }>) {
@@ -191,6 +204,13 @@ async function act(intent: Intent, heard: string) {
       try { hits = await search(intent.query) } catch { return flash('Polymarket did not answer. Try again.') }
       if (!hits.length) return flash(`No open market for "${cut(intent.query, 22)}".`)
       return showSearch(intent.query, hits)
+    }
+    case 'why': {
+      if (screen.name !== 'card') return flash('Open an event, then ask "why".')
+      const e = cachedEvent(screen.id)
+      if (!e) return flash('Polymarket did not answer. Try again.')
+      void loadNews(screen.id, e.title)
+      return showCard(screen.id)
     }
     case 'unfollow': {
       if (screen.name !== 'card') return flash('Open an event first.')

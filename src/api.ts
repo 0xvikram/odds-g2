@@ -46,3 +46,14 @@ export async function getHistory(token: string): Promise<number[]> {
   histories.set(token, { at: Date.now(), points })
   return points
 }
+
+export interface Headline { title: string; source: string; at: number }
+const news = new Map<string, { at: number; items: Headline[] }>()
+/** Up to 3 headlines from the last 24 h that mention this event, cached for 10 minutes. */
+export async function getNews(title: string): Promise<Headline[]> {
+  const hit = news.get(title)
+  if (hit && Date.now() - hit.at < 600000) return hit.items
+  const d = await get<{ items: Headline[] }>(`/api/news?title=${encodeURIComponent(title)}`)
+  news.set(title, { at: Date.now(), items: d.items })
+  return d.items
+}

@@ -34,6 +34,8 @@ test('navigation and actions', () => {
   assert.equal(parse('Yes, place it').kind, 'yes')
   assert.equal(parse('Yes').kind, 'yes')
   assert.equal(parse('cancel').kind, 'no')
+  assert.equal(parse('Why did it move?').kind, 'why')
+  assert.equal(parse("What's the news?").kind, 'why')
   assert.deepEqual(parse('alert at 3 percent'), { kind: 'alert', points: 3 })
 })
 

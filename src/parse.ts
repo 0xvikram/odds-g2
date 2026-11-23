@@ -5,6 +5,7 @@ export type Intent =
   | { kind: 'positions' }
   | { kind: 'unfollow' }
   | { kind: 'close' }
+  | { kind: 'why' }
   | { kind: 'yes' }
   | { kind: 'no' }
   | { kind: 'follow'; query: string }
@@ -66,6 +67,7 @@ export function parse(raw: string): Intent {
   if (/^(unfollow|stop (watching|following)|remove( this| it)?|forget (it|this))$/.test(t)) return { kind: 'unfollow' }
   if (/^(close|sell|cash out|exit)( (it|this|the position|my position|position))?$/.test(t)) return { kind: 'close' }
   if (/^(yes|yeah|yep|confirm|place it|do it|go ahead)( (please|place it|do it|confirm it|confirm))*$/.test(t)) return { kind: 'yes' }
+  if (/^(why|why (did|is|has) (it|this|that)( been)? (move|moved|moving|jump|jumped|drop|dropped|changed?)|what(?:'s| is) (the )?news|any news|news|what happened)$/.test(t)) return { kind: 'why' }
   if (/^(no|nope|cancel|never ?mind|don't)( please)?$/.test(t)) return { kind: 'no' }
 
   let m = t.match(/^(?:set (?:an |the )?)?alert (?:at|to|for) (\d+(?:\.\d+)?) ?(?:%|percent|points?|pts)?$/)
