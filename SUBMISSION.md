@@ -12,7 +12,7 @@ Say any market, keep the odds in sight: live Polymarket odds on Even Realities G
 - Product site: https://odds-g2.vercel.app
 - Try it without glasses (the real app code in the browser): https://odds-g2.vercel.app/try
 - Code (MIT): https://github.com/0xvikram/odds-g2
-- Demo video: YOUTUBE_LINK
+- Demo video: https://youtu.be/_knwOpd7hxc
 
 ## Description
 Prediction markets price the world in real time: a rate decision in Washington, an election in Brazil, a final in Madrid. Checking one still means taking out a phone, opening an app, searching and scrolling. In a meeting, on a run or on a call, you don't.
