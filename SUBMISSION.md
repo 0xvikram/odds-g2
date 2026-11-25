@@ -13,8 +13,8 @@ Say any market, keep the odds in sight: live Polymarket odds on Even Realities G
 - Try it without glasses (the real app code in the browser): https://odds-g2.vercel.app/try
 - Code (MIT): https://github.com/0xvikram/odds-g2
 - Even Hub package (v0.2.1): https://odds-g2.vercel.app/odds.ehpk (also odds.ehpk in the repo)
-- Film (67 s, with sound): https://odds-g2.vercel.app/#film
-- Earlier walkthrough: https://youtu.be/_knwOpd7hxc
+- Demo video, explainer (2:43): https://youtu.be/1aven9oxDK0
+- Launch film (67 s): https://youtu.be/9UTYkaN54IY
 - Even Hub: private app me.vikram.odds (builds 0.2.0, 0.2.1)
 - Telegram alerts bot: @OddsG2AlertsBot
 
