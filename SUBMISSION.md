@@ -23,19 +23,23 @@ Each card is built for a 576 × 288 glance: the leading outcome, its 1-hour chan
 
 **Why did it move?** When a market moves past your alert line, or when you ask "why did it move?", Odds puts the newest headline that names the market under the price, with the outlet and how long ago. No AI writes or picks the line; if nothing matches, it says "No news in 24h".
 
-**Paper bets by voice.** Say "20 on Barcelona": Odds shows stake, price and payout and waits for one tap. A paper portfolio tracks live P&L, and "close it" sells at today's price.
+**Paper bets by voice.** Say "20 on Barcelona": Odds shows stake, price and payout and waits for one tap. A paper portfolio tracks live P&L, and "close it" sells at today's price. When the market resolves, the bet settles itself: WON pays $1 a share, LOST pays nothing, and a market that has stopped trading but has no final result says "closed, result soon".
+
+**Alerts when Odds is closed.** G2 shows one app at a time, so a market can move while you're in another app. Say "connect Telegram": the glasses show a code and the Even app shows a one-tap link to the Odds bot. From then on the backend checks your watchlist every 5 minutes and messages you when a market moves past your line, or when a paper bet settles. The next time you open Odds, it starts on that market.
+
+**Who it's for.** People who already follow prediction markets and can't keep a phone out: the glance between meetings, on a run, on a call, and the alert in the hour a market moves. Free covers following, paper bets and a few alerts a day; a Pro plan (unlimited alerts, a line per market, a morning brief) and, later, real orders with the same tap to confirm would pay for it. The paid plan is not built yet.
 
 ## Safety
-- Paper only: no wallet, no keys, no real orders. The ledger lives on the device.
+- Paper only: no wallet, no keys, no real orders. The ledger lives on the device; linking Telegram copies only the watchlist, alert line and open bets, and /stop deletes them.
 - Rules, not a model, read the amount and the outcome. No exact outcome match, no bet.
 - Every bet needs a tap on "Yes, place it".
 - Silent presses are never sent to speech-to-text, so Whisper can't invent a command from silence.
 
 ## How it's built
 - **Glasses:** Even Hub app (TypeScript, Even Hub SDK 0.0.16): list and text containers, `textContainerUpgrade` for flicker-free live numbers, long-press push-to-talk with the G2 mic (16 kHz PCM), double-tap back. Tested in the official Even Hub simulator 0.9.5.
-- **Backend (Vercel):** `/api/stt` (Whisper large-v3-turbo on Groq, with a loudness guard), `/api/search` and `/api/event` (Polymarket Gamma; resolved and placeholder markets filtered), `/api/history` (Polymarket CLOB, 24 h hourly), `/api/news` (Google News RSS, last 24 h, ranked by market words). No keys on the glasses; nothing about the user is stored.
+- **Backend (Vercel):** `/api/stt` (Whisper large-v3-turbo on Groq, with a loudness guard), `/api/search` and `/api/event` (Polymarket Gamma; resolved and placeholder markets filtered), `/api/history` (Polymarket CLOB, 24 h hourly), `/api/news` (Google News RSS, last 24 h, ranked by market words). `/api/sync`, `/api/tg`, `/api/tick` (Telegram alerts: link code, bot webhook, 5-minute check from GitHub Actions; Upstash Redis holds only linked devices). No keys on the glasses.
 - **Site simulator:** `/try` runs the unchanged app code against a stand-in SDK that draws the G2 display in the page, maps buttons to ring events and streams the browser mic as 16 kHz PCM.
-- Tests: `npm test` (voice parser, outcome matching, headline matching).
+- Tests: `npm test` (voice parser, outcome matching, headline matching, bet settlement, and the Telegram alert flow end to end against fakes).
 
 ## API feature requests
 1. **Even Hub: background alerts.** The WebView pauses when the app is closed, so a "market moved 5 points" alert only shows while Odds is open. Ask: a small background task or a server push that can show one line on the display. Unlocks: real glanceable alerts for odds, prices and messages, the main reason to wear the glasses.

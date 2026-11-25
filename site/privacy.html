@@ -20,21 +20,30 @@
     <main class="prose">
       <span class="eyebrow">Privacy</span>
       <h1>What Odds keeps and sends</h1>
-      <p>Odds has no accounts, no cookies and no analytics. Last updated 24 November 2026.</p>
+      <p>Odds has no accounts, no cookies and no analytics. Last updated 25 November 2026.</p>
       <h2>Kept on your device</h2>
       <ul>
         <li>The markets you follow.</li>
         <li>Your paper bets and their prices.</li>
         <li>Your alert line.</li>
       </ul>
-      <p>These live in the app's local storage (on the site, your browser's). They never reach our servers. Clearing site data removes them.</p>
+      <p>These live in the app's local storage (on the site, your browser's). Unless you link Telegram alerts, they never reach our servers. Clearing site data removes them.</p>
+      <h2>Only if you link Telegram alerts</h2>
+      <p>The glasses run one app at a time, so Odds can't watch markets in the background. If you say “connect Telegram” and send the code to our bot, the Odds backend keeps:</p>
+      <ul>
+        <li>a random id for your app (not tied to your name or glasses),</li>
+        <li>your Telegram chat id,</li>
+        <li>the markets you follow, your alert line and your open paper bets,</li>
+        <li>the price at the last alert for each market, so one move alerts you once.</li>
+      </ul>
+      <p>These sit in an Upstash Redis database. Every few minutes the backend checks your markets on Polymarket and sends you a Telegram message when one moves past your line or a paper bet settles. Say “disconnect Telegram” on the glasses, or send /stop to the bot, and all of it is deleted.</p>
       <h2>Sent while you use it</h2>
       <ul>
         <li><b>Voice clips</b>, only while you hold to talk, to the Odds backend, which forwards them to Groq for speech-to-text. We don't store the clip or the text.</li>
         <li><b>Market searches and ids</b> to the Odds backend, which asks Polymarket's public API.</li>
         <li><b>Market titles</b> to the Odds backend, which searches Google News for headlines.</li>
       </ul>
-      <p>The backend runs on Vercel, which keeps standard request logs (such as IP address and time) for a short period. Groq, Polymarket and Google receive requests from our backend, not from your device.</p>
+      <p>Telegram alerts are sent through Telegram's Bot API, so Telegram sees the messages. The backend runs on Vercel, which keeps standard request logs (such as IP address and time) for a short period. Groq, Polymarket and Google receive requests from our backend, not from your device.</p>
       <h2>Contact</h2>
       <p>Open an issue at <a href="https://github.com/0xvikram/odds-g2/issues">github.com/0xvikram/odds-g2</a>.</p>
     </main>

@@ -1,0 +1,18 @@
+# Telegram alerts: asks the backend to check every linked watchlist. GitHub runs schedules on a best-effort basis
+# (often a few minutes late), which is fine for "a market moved 5 pts" alerts. Run it by hand from the Actions tab too.
+name: alerts tick
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check watchlists
+        env:
+          TICK_SECRET: ${{ secrets.TICK_SECRET }}
+        run: |
+          curl -fsS --max-time 60 -H "authorization: Bearer $TICK_SECRET" https://odds-g2.vercel.app/api/tick

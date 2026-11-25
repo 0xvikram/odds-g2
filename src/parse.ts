@@ -6,6 +6,8 @@ export type Intent =
   | { kind: 'unfollow' }
   | { kind: 'close' }
   | { kind: 'why' }
+  | { kind: 'telegram' }
+  | { kind: 'untelegram' }
   | { kind: 'yes' }
   | { kind: 'no' }
   | { kind: 'follow'; query: string }
@@ -69,6 +71,9 @@ export function parse(raw: string): Intent {
   if (/^(yes|yeah|yep|confirm|place it|do it|go ahead)( (please|place it|do it|confirm it|confirm))*$/.test(t)) return { kind: 'yes' }
   if (/^(why|why (did|is|has) (it|this|that)( been)? (move|moved|moving|jump|jumped|drop|dropped|changed?)|what(?:'s| is) (the )?news|any news|news|what happened)$/.test(t)) return { kind: 'why' }
   if (/^(no|nope|cancel|never ?mind|don't)( please)?$/.test(t)) return { kind: 'no' }
+
+  if (/^(?:dis ?connect|unlink|stop|turn off|remove)(?: my)? telegram(?: alerts?)?$/.test(t)) return { kind: 'untelegram' }
+  if (/^(?:(?:connect|link|set up|setup|add|turn on|open|enable)(?: my)? )?telegram(?: alerts?)?$/.test(t)) return { kind: 'telegram' }
 
   let m = t.match(/^(?:set (?:an |the )?)?alert (?:at|to|for) (\d+(?:\.\d+)?) ?(?:%|percent|points?|pts)?$/)
   if (m) return { kind: 'alert', points: Number(m[1]) }

@@ -11,10 +11,11 @@ import {
   OsEventTypeList,
 } from '@evenrealities/even_hub_sdk'
 import { PushToTalk, transcribe } from './voice'
-import { mountUi, setStatus, setTranscript } from './ui'
+import { mountUi, setStatus, setTranscript, setTelegram } from './ui'
 import { parse, matchOutcome, type Intent } from './parse'
 import { getEvent, cachedEvent, search, getHistory, getNews, type EventData, type SearchHit, type Headline } from './api'
 import * as store from './store'
+import * as link from './link'
 import { card, confirmText, positionsText, settledLine, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
 
 mountUi()
@@ -26,6 +27,7 @@ type Screen =
   | { name: 'card'; id: string }
   | { name: 'confirm'; eventId: string; stake: number; marketIdx: number; outcomeIdx: number; price: number; label: string; back: string }
   | { name: 'positions' }
+  | { name: 'telegram' }
 
 let screen: Screen = { name: 'home' }
 let listItems: string[] = [] // what the current list shows, to map a tap back to an action
@@ -157,6 +159,40 @@ function priceOf(p: store.Position): number | null {
   return m ? m.prices[p.outcomeIndex] ?? null : null
 }
 
+/**
+ * Linking Telegram: the glasses show the bot and a code; the phone panel shows a one-tap link.
+ * Polls every 4 s until the bot reports the chat linked, then sends the watchlist and bets across.
+ */
+async function showTelegram() {
+  screen = { name: 'telegram' }
+  setTelegram(null)
+  await textPage('TELEGRAM ALERTS\n' + RULE + '\nGetting a code…')
+  let s: link.LinkStatus
+  try { s = await link.status() } catch { return textPage('TELEGRAM ALERTS\n' + RULE + '\nCould not reach the Odds server.\nTry again in a moment.\n\nDouble-tap: back') }
+  if (!s.ready) return textPage('TELEGRAM ALERTS\n' + RULE + '\nAlerts are not switched on\non this server yet.\n\nDouble-tap: back')
+  if (s.linked) return telegramLinked()
+  let c: { code: string; bot: string; url: string }
+  try { c = await link.requestCode() } catch { return textPage('TELEGRAM ALERTS\n' + RULE + '\nCould not get a code. Try again.\n\nDouble-tap: back') }
+  if (screen.name !== 'telegram') return
+  setTelegram(c)
+  await textPage(['TELEGRAM ALERTS', RULE, 'Odds can\'t run in the background,', 'so big moves go to your phone.', '',
+    `Tap the link in the Even app, or`, `send ${c.code} to @${c.bot}`, '', 'Code works for 15 min · 2×tap: back'].join('\n'))
+  const until = Date.now() + 15 * 60000
+  while (screen.name === 'telegram' && Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 4000))
+    if (screen.name !== 'telegram') return
+    const now = await link.status().catch(() => null)
+    if (now?.linked) return telegramLinked()
+  }
+}
+
+async function telegramLinked() {
+  await link.pushState()
+  setTelegram({ linked: true })
+  await textPage(['TELEGRAM ALERTS', RULE, 'Linked.', '', `You get a message when a market you`, `follow moves ${store.getAlertPts()} pts, and when a paper`,
+    'bet settles. Odds then opens on it.', '', 'Say "disconnect Telegram" to stop.'].join('\n'))
+}
+
 /** A temporary line on whatever screen is showing. */
 async function flash(text: string, ms = 2600) {
   const before = screen
@@ -172,6 +208,7 @@ async function redraw() {
     case 'card': return showCard(screen.id)
     case 'confirm': return showConfirm(screen)
     case 'positions': return showPositions()
+    case 'telegram': return showTelegram()
   }
 }
 
@@ -211,6 +248,7 @@ function swipe(dir: 1 | -1) {
 
 function back() {
   if (screen.name === 'home') { bridge.shutDownPageContainer(1); return }
+  if (screen.name === 'telegram') setTelegram(null)
   if (screen.name === 'confirm') { void showCard(screen.eventId, 'Cancelled. Nothing placed.'); return }
   void showHome()
 }
@@ -264,6 +302,13 @@ async function act(intent: Intent, heard: string) {
       await getEvent(id, true).catch(() => null)
       const n = store.closeOnEvent(id, priceOf)
       return n ? showPositions() : flash('No open bet on this event.')
+    }
+    case 'telegram': return showTelegram()
+    case 'untelegram': {
+      if (!link.isLinked()) return flash('Telegram is not linked.')
+      try { await link.unlink() } catch { return flash('Could not reach the Odds server. Try again.') }
+      setTelegram(null)
+      return showHome('Telegram unlinked. No more alerts.')
     }
     case 'unknown':
       return flash(heard ? `Didn't catch "${cut(heard, 20)}". Try "follow bitcoin".` : "Didn't catch that.")
@@ -355,3 +400,12 @@ window.addEventListener('beforeunload', cleanup)
 setStatus('paused', 'Hold the touchpad or ring to speak · double-tap to go back')
 await showHome()
 void settleAndAnnounce() // bets whose market resolved while the app was closed
+void openFromAlert()
+
+/** If a Telegram alert went out since the app was last open, start on that market. */
+async function openFromAlert() {
+  const s = await link.status().catch(() => null)
+  if (!s?.linked) return
+  void link.pushState() // the watchlist may have changed on another screen while offline
+  if (s.pending && store.getWatch().some((w) => w.id === s.pending) && screen.name === 'home') await showCard(s.pending, 'Opened from your Telegram alert')
+}

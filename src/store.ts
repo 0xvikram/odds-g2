@@ -1,4 +1,5 @@
-// Watchlist and paper ledger, kept on the device. Nothing here ever leaves it.
+// Watchlist and paper ledger, kept on the device. If the user links Telegram alerts, the watchlist, alert line and
+// open bets are copied to the backend so it can message them while the app is closed (see link.ts).
 
 export interface Watched { id: string; title: string }
 export interface Position {
@@ -38,8 +39,13 @@ function read<T>(key: string, fallback: T): T {
     return v ? (JSON.parse(v) as T) : fallback
   } catch { return fallback }
 }
+const listeners: (() => void)[] = []
+/** Called after the watchlist, alert line or bets change (Telegram alerts keep their copy in step). */
+export const onChange = (fn: () => void) => { listeners.push(fn) }
+
 function write(key: string, v: unknown) {
   try { localStorage.setItem(key, JSON.stringify(v)) } catch { /* storage full or blocked: keep going in memory */ }
+  for (const fn of listeners) fn()
 }
 
 let watch = read<Watched[]>(KEY_WATCH, DEFAULT_WATCH)

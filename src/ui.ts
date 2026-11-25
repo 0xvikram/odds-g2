@@ -15,6 +15,7 @@ export function mountUi() {
       <section class="transcript" aria-live="polite">
         <span id="final"></span><span id="interim" class="interim"></span>
       </section>
+      <section id="tg" class="tg" hidden></section>
       <footer>Hold the touchpad or ring to speak · double-tap to go back.</footer>
     </main>
   `
@@ -22,6 +23,19 @@ export function mountUi() {
   finalEl = app.querySelector<HTMLSpanElement>('#final')!
   interimEl = app.querySelector<HTMLSpanElement>('#interim')!
   injectStyles()
+}
+
+/** The phone side of linking Telegram: one tap opens the bot with the code filled in. Null hides it. */
+export function setTelegram(state: { code: string; url: string; bot: string } | { linked: true } | null) {
+  const el = document.querySelector<HTMLElement>('#tg')
+  if (!el) return
+  el.hidden = !state
+  if (!state) { el.innerHTML = ''; return }
+  if ('linked' in state) { el.innerHTML = '<p class="tg-ok">Telegram linked. Alerts arrive in your chat with the Odds bot.</p>'; return }
+  el.innerHTML = `
+    <p>Get alerts when Odds is closed.</p>
+    <a class="tg-btn" href="${state.url}" target="_blank" rel="noopener">Open @${state.bot} in Telegram</a>
+    <p class="tg-code">or send it this code: <b>${state.code}</b></p>`
 }
 
 export function setStatus(kind: Status, text: string) {
@@ -61,6 +75,13 @@ function injectStyles() {
       border-radius: 12px; padding: 20px; font-size: 18px; line-height: 1.5;
       min-height: 180px; white-space: pre-wrap; word-break: break-word; }
     .interim { color: #919191; }
+    .tg { background: #2E2E2E; border: 1px solid #3E3E3E; border-radius: 12px; padding: 16px; font-size: 15px; }
+    .tg p { margin: 0 0 10px; }
+    .tg-btn { display: block; text-align: center; padding: 12px; border-radius: 10px; background: #2AABEE; color: #fff;
+      font-weight: 600; text-decoration: none; }
+    .tg-code { margin: 10px 0 0 !important; color: #A7A7A7; font-size: 13px; }
+    .tg-code b { color: #E5E5E5; letter-spacing: 0.12em; }
+    .tg-ok { color: #3CFA44; margin: 0 !important; }
     footer { font-size: 12px; color: #7B7B7B; text-align: center; }
   `
   const style = document.createElement('style')

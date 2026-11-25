@@ -2,6 +2,16 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { parse, matchOutcome, wordsToDigits } from './parse.ts'
 
+test('telegram', () => {
+  assert.deepEqual(parse('Connect Telegram.'), { kind: 'telegram' })
+  assert.deepEqual(parse('telegram alerts'), { kind: 'telegram' })
+  assert.deepEqual(parse('set up telegram'), { kind: 'telegram' })
+  assert.deepEqual(parse('open telegram'), { kind: 'telegram' })
+  assert.deepEqual(parse('disconnect telegram'), { kind: 'untelegram' })
+  assert.deepEqual(parse('stop telegram alerts'), { kind: 'untelegram' })
+  assert.deepEqual(parse('follow the fed decision'), { kind: 'follow', query: 'fed decision' })
+})
+
 test('number words', () => {
   assert.equal(wordsToDigits('twenty five on hold'), '25 on hold')
   assert.equal(wordsToDigits('a hundred on yes'), '100 on yes')
