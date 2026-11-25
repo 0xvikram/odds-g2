@@ -58,6 +58,20 @@ export function slimMarket(m: any) {
   }
 }
 
+/**
+ * A closed market, for settling paper bets. winner = index of the outcome that paid $1, or null while the
+ * result is not final yet (closed for trading, waiting for the oracle).
+ */
+export function settledMarket(m: any) {
+  if (!m.closed) return null
+  const outcomes = arr(m.outcomes)
+  const prices = arr(m.outcomePrices).map(Number)
+  if (!outcomes.length) return null
+  const top = prices.findIndex((p) => p >= 0.99)
+  const final = top >= 0 && prices.every((p, i) => i === top || p <= 0.01) && (m.resolutionStatus == null || m.resolutionStatus === 'resolved')
+  return { id: String(m.id), label: String(m.groupItemTitle || outcomes[0] || m.question || ''), outcomes, winner: final ? top : null }
+}
+
 /** Polymarket keeps unpriced slots ("Other", "Team H" at 50%, no volume) on some events: never treat them as the leader. */
 export const isPlaceholder = (m: { label: string; prices: number[]; volume24h: number | null }) =>
   /^(other|team [a-z])$/i.test(m.label.trim()) || (m.prices[0] === 0.5 && !m.volume24h)

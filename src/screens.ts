@@ -120,17 +120,39 @@ export function confirmText(stake: number, name: string, price: number): string 
   ].join('\n')
 }
 
-export function positionsText(open: Position[], priceOf: (p: Position) => number | null): string {
-  if (!open.length) return ['POSITIONS · paper', RULE, 'No open bets.', '', 'Open an event and say', '"20 on <outcome>".', '', 'Double-tap: back'].join('\n')
-  let total = 0, known = true
-  const rows = open.slice(0, 6).map((p) => {
+/**
+ * Open bets with live P&L, then the latest closed ones: WON / LOST when the market resolved, SOLD when closed by voice.
+ * A bet whose market stopped trading but has no final result yet says so instead of showing a price.
+ */
+export function positionsText(open: Position[], closed: Position[], priceOf: (p: Position) => number | null,
+  isAwaiting: (p: Position) => boolean, realized: number): string {
+  if (!open.length && !closed.length) return ['POSITIONS · paper', RULE, 'No bets yet.', '', 'Open an event and say', '"20 on <outcome>".', '', 'Double-tap: back'].join('\n')
+  let total = 0, known = true, priced = 0
+  const openRows = open.slice(0, closed.length ? 4 : 6).map((p) => {
+    const head = `${cut(p.label, 14)}  $${p.stake} @${Math.round(p.entry * 100)}¢`
+    if (isAwaiting(p)) return `${head}  closed, result soon`
     const now = priceOf(p)
-    if (now == null) { known = false; return `${cut(p.label, 14)}  $${p.stake} @${Math.round(p.entry * 100)}¢ → …` }
+    if (now == null) { known = false; return `${head} → …` }
     const pnl = pnlAt(p, now)
     total += pnl
-    return `${cut(p.label, 14)}  $${p.stake} @${Math.round(p.entry * 100)}¢→${Math.round(now * 100)}¢  ${money(pnl)}`
+    priced++
+    return `${head}→${Math.round(now * 100)}¢  ${money(pnl)}`
   })
-  return [`POSITIONS · paper   ${known ? money(total) : '…'}`, RULE, ...rows, RULE, 'Hold: "close" on an event to sell'].join('\n')
+  const doneRows = closed.slice(0, 6 - openRows.length).map((p) => {
+    const pnl = p.shares * (p.exit ?? 0) - p.stake
+    const tag = p.result === 'won' ? 'WON ' : p.result === 'lost' ? 'LOST' : 'SOLD'
+    return cut(`${tag} ${cut(p.label, 14)}  $${p.stake} @${Math.round(p.entry * 100)}¢  ${money(pnl)}`, 44)
+  })
+  const top = priced || !known ? `open ${known ? money(total) : '…'}` : ''
+  const done = closed.length ? `done ${money(realized)}` : ''
+  return [cut(`POSITIONS · paper   ${[top, done].filter(Boolean).join(' · ')}`, 44), RULE, ...openRows, ...doneRows, RULE,
+    open.length ? 'Hold: "close" on an event to sell' : 'Double-tap: back'].join('\n')
+}
+
+/** One line for a bet the market just settled, e.g. "Settled: WON Hold +$24.44". */
+export function settledLine(p: Position): string {
+  const pnl = p.shares * (p.exit ?? 0) - p.stake
+  return cut(`Settled: ${p.result === 'won' ? 'WON' : 'LOST'} ${cut(p.label, 14)} ${money(pnl)}`, 44)
 }
 
 export const money = (x: number) => `${x < 0 ? '-' : '+'}$${Math.abs(x).toFixed(2)}`

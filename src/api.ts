@@ -12,7 +12,9 @@ export interface Market {
   change1d: number | null
   volume24h: number | null
 }
-export interface EventData { id: string; title: string; endDate: string | null; markets: Market[]; at: number }
+/** A closed market. winner is the outcome that paid $1, or null while the result is not final. */
+export interface Settled { id: string; label: string; outcomes: string[]; winner: number | null }
+export interface EventData { id: string; title: string; endDate: string | null; closed?: boolean; markets: Market[]; settled?: Settled[]; at: number }
 export interface SearchHit { id: string; title: string; endDate: string | null; top: { label: string; price: number } }
 
 async function get<T>(path: string, timeoutMs = 12000): Promise<T> {

@@ -14,7 +14,12 @@ export interface Position {
   openedAt: number
   closedAt?: number
   exit?: number
+  /** Set when the market resolved: the bet paid $1 a share (won) or nothing (lost). Absent for a manual close. */
+  result?: 'won' | 'lost'
 }
+
+/** What settling needs from an event: its closed markets and, once final, the outcome that paid. */
+export interface SettledLike { id: string; winner: number | null }
 
 const KEY_WATCH = 'odds.watch.v1'
 const KEY_POS = 'odds.positions.v1'
@@ -80,6 +85,36 @@ export function closeOnEvent(eventId: string, priceOf: (p: Position) => number |
   write(KEY_POS, positions)
   return n
 }
+
+/**
+ * Settles every open bet on this event whose market has resolved. A won share pays $1, a lost one $0.
+ * Returns the bets it settled (newest state), so the caller can say so.
+ */
+export function settleFrom(eventId: string, settled: SettledLike[] | undefined): Position[] {
+  if (!settled?.length) return []
+  const done: Position[] = []
+  positions = positions.map((p) => {
+    if (p.eventId !== eventId || p.closedAt != null) return p
+    const m = settled.find((x) => x.id === p.marketId)
+    if (!m || m.winner == null) return p
+    const won = m.winner === p.outcomeIndex
+    const q: Position = { ...p, closedAt: Date.now(), exit: won ? 1 : 0, result: won ? 'won' : 'lost' }
+    done.push(q)
+    return q
+  })
+  if (done.length) write(KEY_POS, positions)
+  return done
+}
+
+/** True when the bet's market has stopped trading but the result is not final yet. */
+export const awaiting = (p: Position, settled: SettledLike[] | undefined) =>
+  p.closedAt == null && !!settled?.some((x) => x.id === p.marketId && x.winner == null)
+
+/** Closed bets, newest first (settled by the market or closed by voice). */
+export const closedPositions = () => positions.filter((p) => p.closedAt != null).sort((a, b) => b.closedAt! - a.closedAt!)
+
+/** Profit or loss already locked in by closed bets. */
+export const realized = () => closedPositions().reduce((t, p) => t + p.shares * (p.exit ?? 0) - p.stake, 0)
 
 export const valueAt = (p: Position, price: number) => p.shares * price
 export const pnlAt = (p: Position, price: number) => p.shares * price - p.stake

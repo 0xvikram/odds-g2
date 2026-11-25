@@ -15,7 +15,7 @@ import { mountUi, setStatus, setTranscript } from './ui'
 import { parse, matchOutcome, type Intent } from './parse'
 import { getEvent, cachedEvent, search, getHistory, getNews, type EventData, type SearchHit, type Headline } from './api'
 import * as store from './store'
-import { card, confirmText, positionsText, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
+import { card, confirmText, positionsText, settledLine, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
 
 mountUi()
 const bridge = await waitForEvenAppBridge()
@@ -126,9 +126,30 @@ async function showConfirm(c: Extract<Screen, { name: 'confirm' }>) {
 
 async function showPositions() {
   screen = { name: 'positions' }
-  const open = store.openPositions()
-  await Promise.allSettled([...new Set(open.map((p) => p.eventId))].map((id) => getEvent(id)))
-  await textPage(positionsText(open, priceOf))
+  await settleAll()
+  if (screen.name !== 'positions') return
+  const awaitingResult = (p: store.Position) => store.awaiting(p, cachedEvent(p.eventId)?.settled)
+  await textPage(positionsText(store.openPositions(), store.closedPositions(), priceOf, awaitingResult, store.realized()))
+}
+
+/**
+ * Fetches every event with an open bet and settles bets whose market resolved.
+ * Returns the bets settled by this call so the caller can announce them.
+ */
+async function settleAll(fresh = false): Promise<store.Position[]> {
+  const ids = [...new Set(store.openPositions().map((p) => p.eventId))]
+  await Promise.allSettled(ids.map((id) => getEvent(id, fresh)))
+  const done = ids.flatMap((id) => store.settleFrom(id, cachedEvent(id)?.settled))
+  for (const p of done) console.log('[odds] settled', p.label, p.result)
+  return done
+}
+
+/** Background check: when a bet settles while another screen is up, say so on that screen. */
+async function settleAndAnnounce() {
+  const done = await settleAll(true).catch(() => [] as store.Position[])
+  if (!done.length) return
+  if (screen.name === 'positions') return showPositions()
+  await flash(done.length === 1 ? settledLine(done[0]) : `${done.length} bets settled. Say "positions".`, 5000)
 }
 
 function priceOf(p: store.Position): number | null {
@@ -313,8 +334,10 @@ const unsubscribe = bridge.onEvenHubEvent((event) => {
 })
 
 // Live numbers: the open card every 15 s; the watchlist and positions when idle (rebuilding a list resets its selection).
+let ticks = 0
 const timer = window.setInterval(() => {
   if (ptt.recording) return
+  if (++ticks % 4 === 0 && store.openPositions().length) { void settleAndAnnounce(); return }
   if (screen.name === 'card') void getEvent(screen.id, true).then(() => showCard((screen as { id: string }).id)).catch(() => {})
   else if ((screen.name === 'home' || screen.name === 'positions') && Date.now() - lastInput > 20000) void redraw()
 }, 15000)
@@ -331,3 +354,4 @@ window.addEventListener('beforeunload', cleanup)
 
 setStatus('paused', 'Hold the touchpad or ring to speak · double-tap to go back')
 await showHome()
+void settleAndAnnounce() // bets whose market resolved while the app was closed
