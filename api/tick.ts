@@ -3,7 +3,7 @@
 // and when a paper bet's market resolved. Returns what it sent (counts only).
 import { GAMMA, getJson, json, slimMarket, settledMarket, isPlaceholder } from './_lib.js'
 import { kv, kvReady, getJsonKey, setJsonKey, devKey, type DeviceState } from './_kv.js'
-import { tgReady, send } from './_tg.js'
+import { tgReady, send, configureBot, HOOK_VERSION } from './_tg.js'
 
 const ADMIN = process.env.TICK_SECRET ?? ''
 const MAX_MESSAGES_PER_DEVICE = 5
@@ -11,6 +11,11 @@ const MAX_MESSAGES_PER_DEVICE = 5
 export async function GET(req: Request) {
   if (!ADMIN || req.headers.get('authorization') !== `Bearer ${ADMIN}`) return json({ error: 'not allowed' }, 401)
   if (!kvReady() || !tgReady()) return json({ error: 'alerts not set up' }, 503)
+  // Webhook settings changed in code (e.g. edited messages): apply them once, from here, so no one has to run setup again.
+  const hookSecret = process.env.TG_WEBHOOK_SECRET ?? ''
+  if (hookSecret && (await kv<string | null>('GET', 'tg:hook')) !== HOOK_VERSION) {
+    await configureBot(new URL(req.url).origin, hookSecret).then(() => kv('SET', 'tg:hook', HOOK_VERSION)).catch((e) => console.error('[tick] bot setup', e))
+  }
   const devices = (await kv<string[]>('SMEMBERS', 'devices')) ?? []
   const events = new Map<string, Promise<any | null>>()
   const event = (id: string) => {

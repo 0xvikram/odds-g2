@@ -7,6 +7,7 @@ export type Intent =
   | { kind: 'close' }
   | { kind: 'why' }
   | { kind: 'telegram' }
+  | { kind: 'undo' }
   | { kind: 'untelegram' }
   | { kind: 'yes' }
   | { kind: 'no' }
@@ -72,6 +73,7 @@ export function parse(raw: string): Intent {
   if (/^(why|why (did|is|has) (it|this|that)( been)? (move|moved|moving|jump|jumped|drop|dropped|changed?)|what(?:'s| is) (the )?news|any news|news|what happened)$/.test(t)) return { kind: 'why' }
   if (/^(no|nope|cancel|never ?mind|don't)( please)?$/.test(t)) return { kind: 'no' }
 
+  if (/^(undo|undo (it|that|the bet)|take (it|that) back|cancel (it|that|the bet))$/.test(t)) return { kind: 'undo' }
   if (/^(?:dis ?connect|unlink|stop|turn off|remove)(?: my)? telegram(?: alerts?)?$/.test(t)) return { kind: 'untelegram' }
   if (/^(?:(?:connect|link|set up|setup|add|turn on|open|enable)(?: my)? )?telegram(?: alerts?)?$/.test(t)) return { kind: 'telegram' }
 

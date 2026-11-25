@@ -71,6 +71,15 @@ export function setAlertPts(n: number) {
 export const openPositions = () => positions.filter((p) => p.closedAt == null)
 export const allPositions = () => positions
 
+/** Removes a bet as if it was never placed (the 10-second undo). Returns whether it existed and was still open. */
+export function removePosition(id: string): boolean {
+  const before = positions.length
+  positions = positions.filter((p) => !(p.id === id && p.closedAt == null))
+  if (positions.length === before) return false
+  write(KEY_POS, positions)
+  return true
+}
+
 export function openPosition(p: Omit<Position, 'id' | 'shares' | 'openedAt'>): Position {
   const pos: Position = { ...p, id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, shares: p.stake / p.entry, openedAt: Date.now() }
   positions = [pos, ...positions]

@@ -125,7 +125,7 @@ export function confirmText(stake: number, name: string, price: number): string 
  * A bet whose market stopped trading but has no final result yet says so instead of showing a price.
  */
 export function positionsText(open: Position[], closed: Position[], priceOf: (p: Position) => number | null,
-  isAwaiting: (p: Position) => boolean, realized: number): string {
+  isAwaiting: (p: Position) => boolean, realized: number, help?: string): string {
   if (!open.length && !closed.length) return ['POSITIONS · paper', RULE, 'No bets yet.', '', 'Open an event and say', '"20 on <outcome>".', '', 'Double-tap: back'].join('\n')
   let total = 0, known = true, priced = 0
   const openRows = open.slice(0, closed.length ? 4 : 6).map((p) => {
@@ -146,7 +146,7 @@ export function positionsText(open: Position[], closed: Position[], priceOf: (p:
   const top = priced || !known ? `open ${known ? money(total) : '…'}` : ''
   const done = closed.length ? `done ${money(realized)}` : ''
   return [cut(`POSITIONS · paper   ${[top, done].filter(Boolean).join(' · ')}`, 44), RULE, ...openRows, ...doneRows, RULE,
-    open.length ? 'Hold: "close" on an event to sell' : 'Double-tap: back'].join('\n')
+    help ?? (open.length ? 'Hold: "close" on an event to sell' : 'Double-tap: back')].join('\n')
 }
 
 /** One line for a bet the market just settled, e.g. "Settled: WON Hold +$24.44". */

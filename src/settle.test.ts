@@ -39,3 +39,10 @@ test('positions screen shows open bets, then WON / LOST lines', () => {
   assert.match(text, /WON Hold \$20 @40¢ \+\$30\.00/)
   assert.match(text, /LOST No \$10 @25¢ -\$10\.00/)
 })
+
+test('undo removes an open bet as if it was never placed, and only once', () => {
+  const p = store.openPosition({ eventId: 'e9', eventTitle: 'X', marketId: 'm9', label: 'Yes', outcomeIndex: 0, stake: 5, entry: 0.5 })
+  assert.equal(store.removePosition(p.id), true)
+  assert.equal(store.allPositions().some((x) => x.id === p.id), false)
+  assert.equal(store.removePosition(p.id), false)
+})

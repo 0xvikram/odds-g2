@@ -4,7 +4,7 @@
 //   GET ?setup=1 with "authorization: Bearer $TICK_SECRET" points the bot's webhook here (run once after deploy).
 import { json } from './_lib.js'
 import { kv, kvReady, getJsonKey, setJsonKey, devKey, type DeviceState } from './_kv.js'
-import { tg, tgReady, send } from './_tg.js'
+import { tgReady, send, configureBot, findCode } from './_tg.js'
 
 const SECRET = process.env.TG_WEBHOOK_SECRET ?? ''
 const ADMIN = process.env.TICK_SECRET ?? ''
@@ -20,21 +20,16 @@ const HELLO = [
 export async function GET(req: Request) {
   if (!ADMIN || req.headers.get('authorization') !== `Bearer ${ADMIN}`) return json({ error: 'not allowed' }, 401)
   if (!tgReady() || !SECRET) return json({ error: 'TG_BOT_TOKEN, TG_BOT_NAME and TG_WEBHOOK_SECRET must be set' }, 503)
-  const url = `${new URL(req.url).origin}/api/tg`
-  await tg('setWebhook', { url, secret_token: SECRET, allowed_updates: ['message'], drop_pending_updates: true })
-  await tg('setMyCommands', { commands: [
-    { command: 'status', description: 'What I am watching for you' },
-    { command: 'stop', description: 'Unlink and stop alerts' },
-  ] })
-  await tg('setMyDescription', { description: 'Alerts from Odds, the Polymarket app for Even Realities G2 glasses: big moves on markets you follow, and settled paper bets.' })
-  return json({ ok: true, webhook: url })
+  const origin = new URL(req.url).origin
+  await configureBot(origin, SECRET)
+  return json({ ok: true, webhook: `${origin}/api/tg` })
 }
 
 export async function POST(req: Request) {
   if (!SECRET || req.headers.get('x-telegram-bot-api-secret-token') !== SECRET) return json({ error: 'not allowed' }, 401)
   if (!kvReady() || !tgReady()) return json({ ok: true })
   const update = await req.json().catch(() => null)
-  const msg = update?.message
+  const msg = update?.message ?? update?.edited_message // an edited message counts: people fix a mistyped code
   const chatId: number | undefined = msg?.chat?.id
   const text = String(msg?.text ?? '').trim()
   if (!chatId || msg.chat.type !== 'private') return json({ ok: true })
@@ -48,7 +43,7 @@ export async function POST(req: Request) {
 }
 
 async function handle(chatId: number, text: string) {
-  const code = (text.match(/^\/start\s+([A-Za-z0-9]{6})$/)?.[1] ?? text.match(/^([A-Za-z0-9]{6})$/)?.[1])?.toUpperCase()
+  const code = /^\/(stop|status)\b/.test(text) ? null : findCode(text)
   if (code) return link(chatId, code)
   const device = await kv<string | null>('GET', `chat:${chatId}`)
   if (/^\/stop\b/.test(text)) {

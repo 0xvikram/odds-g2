@@ -126,12 +126,26 @@ async function showConfirm(c: Extract<Screen, { name: 'confirm' }>) {
   await listPage(confirmText(c.stake, c.label, c.price), ['Yes, place it', 'No'])
 }
 
+/** The bet that can still be taken back, for 10 seconds after "Yes, place it". */
+let undo: { id: string; until: number } | null = null
+const UNDO_MS = 10000
+const canUndo = () => !!undo && Date.now() < undo.until
+
+async function undoBet() {
+  if (!canUndo()) return flash('Too late to undo. Say "close" on the event to sell.')
+  const ok = store.removePosition(undo!.id)
+  undo = null
+  await showPositions()
+  await flash(ok ? 'Undone. Nothing was placed.' : 'That bet is already closed.')
+}
+
 async function showPositions() {
   screen = { name: 'positions' }
   await settleAll()
   if (screen.name !== 'positions') return
   const awaitingResult = (p: store.Position) => store.awaiting(p, cachedEvent(p.eventId)?.settled)
-  await textPage(positionsText(store.openPositions(), store.closedPositions(), priceOf, awaitingResult, store.realized()))
+  const help = canUndo() ? `Placed. Tap or say "undo" (${Math.ceil((undo!.until - Date.now()) / 1000)}s)` : undefined
+  await textPage(positionsText(store.openPositions(), store.closedPositions(), priceOf, awaitingResult, store.realized(), help))
 }
 
 /**
@@ -233,9 +247,11 @@ async function placeBet(c: Extract<Screen, { name: 'confirm' }>) {
   const e = cachedEvent(c.eventId)
   const m = e?.markets[c.marketIdx]
   if (!e || !m) return showCard(c.eventId, 'Market changed. Nothing placed.')
-  store.openPosition({ eventId: e.id, eventTitle: e.title, marketId: m.id, label: c.label, outcomeIndex: c.outcomeIdx, stake: c.stake, entry: c.price })
+  const pos = store.openPosition({ eventId: e.id, eventTitle: e.title, marketId: m.id, label: c.label, outcomeIndex: c.outcomeIdx, stake: c.stake, entry: c.price })
   console.log('[odds] paper bet', c.stake, c.label, c.price)
+  undo = { id: pos.id, until: Date.now() + UNDO_MS }
   await showPositions()
+  setTimeout(() => { if (screen.name === 'positions' && !canUndo()) void showPositions() }, UNDO_MS + 200)
 }
 
 function swipe(dir: 1 | -1) {
@@ -304,6 +320,7 @@ async function act(intent: Intent, heard: string) {
       return n ? showPositions() : flash('No open bet on this event.')
     }
     case 'telegram': return showTelegram()
+    case 'undo': return undoBet()
     case 'untelegram': {
       if (!link.isLinked()) return flash('Telegram is not linked.')
       try { await link.unlink() } catch { return flash('Could not reach the Odds server. Try again.') }
@@ -372,6 +389,7 @@ const unsubscribe = bridge.onEvenHubEvent((event) => {
   if (is(OsEventTypeList.SCROLL_BOTTOM_EVENT)) { swipe(1); return }
   if (is(OsEventTypeList.SCROLL_TOP_EVENT)) { swipe(-1); return }
   if (is(OsEventTypeList.CLICK_EVENT)) {
+    if (screen.name === 'positions' && canUndo()) { void undoBet(); return }
     if (event.listEvent) void openSelected(event.listEvent.currentSelectItemIndex ?? 0)
     return
   }

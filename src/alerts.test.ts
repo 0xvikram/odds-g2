@@ -35,6 +35,7 @@ globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
   const body = init?.body ? JSON.parse(String(init.body)) : null
   if (url === 'https://kv.test') return Response.json({ result: redis(body) })
   if (url.startsWith('https://api.telegram.org/botbot-token/')) {
+    calls.push(url.split('/').pop()!)
     if (url.endsWith('/sendMessage')) sent.push({ chat: body.chat_id, text: body.text })
     return Response.json({ ok: true, result: {} })
   }
@@ -47,6 +48,7 @@ const market = (id: string, label: string, yes: number, extra: object = {}) => (
   id, groupItemTitle: label, outcomes: '["Yes","No"]', outcomePrices: JSON.stringify([String(yes), String(1 - yes)]), closed: false, volume24hr: 1000, ...extra,
 })
 
+const calls: string[] = []
 const sync = await import('../api/sync.ts')
 const tgHook = await import('../api/tg.ts')
 const tick = await import('../api/tick.ts')
@@ -56,8 +58,8 @@ const CHAT = 4242
 const post = (h: any, body: object, headers: Record<string, string> = {}) =>
   h.POST(new Request('https://odds-g2.vercel.app/api/x', { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) })).then((r: Response) => r.json())
 const runTick = (auth = 'Bearer tick-secret') => tick.GET(new Request('https://odds-g2.vercel.app/api/tick', { headers: { authorization: auth } }))
-const telegram = (text: string, secret = 'hook-secret') =>
-  tgHook.POST(new Request('https://odds-g2.vercel.app/api/tg', { method: 'POST', headers: { 'x-telegram-bot-api-secret-token': secret }, body: JSON.stringify({ message: { chat: { id: CHAT, type: 'private' }, text } }) }))
+const telegram = (text: string, secret = 'hook-secret', kind: 'message' | 'edited_message' = 'message') =>
+  tgHook.POST(new Request('https://odds-g2.vercel.app/api/tg', { method: 'POST', headers: { 'x-telegram-bot-api-secret-token': secret }, body: JSON.stringify({ [kind]: { chat: { id: CHAT, type: 'private' }, text } }) }))
 
 test('nothing is stored before linking', async () => {
   const r = await post(sync, { device: DEVICE, action: 'state', watch: [{ id: '770450', title: 'Fed' }], alertPts: 5, bets: [] })
@@ -122,9 +124,31 @@ test('a resolved market settles the paper bet in Telegram, once', async () => {
   assert.equal(sent.length, before + 1)
 })
 
+test('the first tick applies the bot settings once (edited messages on)', async () => {
+  const n = calls.filter((c) => c === 'setWebhook').length
+  assert.ok(n >= 1)
+  await runTick()
+  assert.equal(calls.filter((c) => c === 'setWebhook').length, n) // not again
+})
+
 test('/stop unlinks and removes what was stored', async () => {
   await telegram('/stop')
   assert.match(sent.at(-1)!.text, /^Unlinked/)
   assert.equal(db.get(`dev:${DEVICE}`), undefined)
   assert.equal(sets.get('devices')?.has(DEVICE), false)
+})
+
+test('a code fixed by editing the message, or inside a sentence, still links', async () => {
+  const { findCode } = await import('../api/_tg.ts')
+  assert.equal(findCode('/start K7Q2MX'), 'K7Q2MX')
+  assert.equal(findCode('k7q2mx'), 'K7Q2MX')
+  assert.equal(findCode('my code is k7q2mx thanks'), 'K7Q2MX')
+  assert.equal(findCode('please link me'), null) // six-letter words without a digit are not codes
+  assert.equal(findCode('hello there'), null)
+
+  const first = await post(sync, { device: DEVICE, action: 'link' })
+  await telegram('hi') // typo first…
+  assert.match(sent.at(-1)!.text, /^Hi, I am the Odds bot/)
+  await telegram(`here it is: ${first.code}`, 'hook-secret', 'edited_message') // …then edited into the code
+  assert.match(sent.at(-1)!.text, /^Linked to your glasses/)
 })

@@ -2,6 +2,13 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { parse, matchOutcome, wordsToDigits } from './parse.ts'
 
+test('undo', () => {
+  assert.deepEqual(parse('Undo.'), { kind: 'undo' })
+  assert.deepEqual(parse('take it back'), { kind: 'undo' })
+  assert.deepEqual(parse('cancel the bet'), { kind: 'undo' })
+  assert.deepEqual(parse('cancel'), { kind: 'no' })
+})
+
 test('telegram', () => {
   assert.deepEqual(parse('Connect Telegram.'), { kind: 'telegram' })
   assert.deepEqual(parse('telegram alerts'), { kind: 'telegram' })
