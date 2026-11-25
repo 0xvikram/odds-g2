@@ -8,3 +8,5 @@ dist/
 .DS_Store
 .env*
 dist-site/
+!odds.ehpk
+!site/public/odds.ehpk

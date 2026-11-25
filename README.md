@@ -11,6 +11,8 @@ Built for the DoraHacks "Heads Up: Even Realities G2" hackathon, track **02 Cryp
 read-only data and paper trading only).
 
 **Try it without glasses: https://odds-g2.vercel.app/try** (the real app code on a simulated 576×288 display).
+
+**Install on G2:** [`odds.ehpk`](odds.ehpk) (v0.2.0, Even app 2.2.10+), also at https://odds-g2.vercel.app/odds.ehpk. Rebuild it with `npm run pack`.
 Product site: https://odds-g2.vercel.app
 
 ## How it works

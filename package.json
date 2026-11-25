@@ -9,7 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "build:site": "tsc --noEmit -p tsconfig.site.json && vite build --config vite.site.config.ts",
     "preview": "vite preview",
-    "pack": "npm run build && evenhub pack app.json dist",
+    "pack": "npm run build && evenhub pack app.json dist -o odds.ehpk && cp odds.ehpk site/public/odds.ehpk",
     "simulate": "evenhub-simulator --aid coreaudio:BuiltInMicrophoneDevice --automation-port 9898 http://127.0.0.1:5191",
     "test": "node --import tsx --test src/*.test.ts"
   },
