@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#0a0c0b" />
+    <meta name="theme-color" content="#0a0b0b" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&family=Inter:wght@400;500;600&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/style.css" />
-    <title>Odds · Say any market, see the odds on your G2</title>
-    <meta name="description" content="Odds puts live Polymarket prices on Even Realities G2 glasses. Hold the ring, say any market, and the price, its 24-hour line and the headline behind a big move sit at the edge of your view." />
+    <title>Odds · Live Polymarket odds on your G2</title>
+    <meta name="description" content="Odds puts live Polymarket prices on Even Realities G2 glasses. Say any market; the price, its 24-hour line and the headline behind a big move sit at the edge of your view. Alerts reach your phone when Odds is closed." />
     <meta property="og:title" content="Odds · Say any market. Keep the odds in sight." />
     <meta property="og:description" content="Live Polymarket odds on Even Realities G2 glasses, by voice. Try it in your browser." />
     <meta property="og:image" content="https://odds-g2.vercel.app/og.png" />
@@ -18,89 +18,81 @@
   </head>
   <body>
     <header class="nav"><div class="wrap">
-      <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#111513"/><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="5" fill="#3cfa44"/></svg> Odds</a>
-      <nav class="links"><a href="/#how">How it works</a><a href="/#safety">Safety</a><a href="/faq">FAQ</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a><a class="btn btn-go" href="/try">Try it</a></nav>
+      <a class="brand" href="/"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#050606"/><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="5" fill="#3cfa44"/></svg>Odds</a>
+      <nav class="links"><a href="/#how">How it works</a><a href="/#alerts">Alerts</a><a href="/#safety">Safety</a><a href="/faq">FAQ</a><a class="btn btn-go" href="/try">Try it</a></nav>
     </div></header>
+
     <main>
       <section class="hero"><div class="wrap">
-        <div>
-          <span class="eyebrow">For Even Realities G2 glasses</span>
-          <h1>Say any market.<br /><span class="g">Keep the odds in sight.</span></h1>
-          <p class="lead">Odds puts live Polymarket prices on your G2. Hold the ring, say “follow the Fed decision”, and the price, its 24-hour line and the news behind any big move sit at the edge of your view.</p>
-          <div class="cta"><a class="btn btn-go" href="/try">Try it in your browser</a><a class="btn btn-ghost" href="#how">How it works</a></div>
-          <p class="small muted">No glasses needed to try. Paper bets only: no wallet, no keys, no money.</p>
+        <span class="kicker">For Even Realities G2 glasses</span>
+        <h1>Say any market. <em>Keep the odds in sight.</em></h1>
+        <p class="lead">Live Polymarket prices on your G2. Hold the ring, say “follow the Fed decision”, and the price, its trend and the news behind a big move sit at the edge of your view. No phone out.</p>
+        <div class="cta">
+          <a class="btn btn-go" href="/try">Try it in your browser</a>
+          <a class="btn btn-line" href="/odds.ehpk" download>Install on G2</a>
         </div>
-        <div>
-          <div class="tabs" id="tabs" role="group" aria-label="Market shown"></div>
-          <div class="lens-frame">
-            <div class="lens-box"><div class="lens" id="lens" aria-live="polite"></div></div>
+        <p class="fine">No glasses needed to try · Paper bets only: no wallet, no keys, no money</p>
+
+        <div class="view">
+          <svg class="frame" viewBox="0 0 1200 520" aria-hidden="true" preserveAspectRatio="none">
+            <g fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="5" stroke-linecap="round">
+              <rect x="70" y="70" width="490" height="380" rx="120" />
+              <rect x="640" y="70" width="490" height="380" rx="120" />
+              <path d="M560 170 Q600 136 640 170" />
+              <path d="M70 140 L8 112" /><path d="M1130 140 L1192 112" />
+            </g>
+          </svg>
+          <div class="left-note">
+            <p>The price, its trend and why it moved, without picking up a phone.</p>
+            <small>Live on this page, drawn by the app's own screen code.</small>
           </div>
-          <div class="lens-cap"><span><span class="live-dot"></span>Live Polymarket data · the app's own screen code</span><span id="when"></span></div>
+          <div class="in-lens"><div class="lens-box"><div class="lens" id="lens" aria-live="polite"></div></div></div>
         </div>
-      </div></section>
-
-      <div class="says" aria-hidden="true"><div class="track">
-        <span>“follow the Fed decision”</span><span>“what's bitcoin doing?”</span><span>“watch the Champions League”</span><span>“why did it move?”</span><span>“20 on no change”</span><span>“positions”</span><span>“alert at 3 points”</span>
-        <span>“follow the Fed decision”</span><span>“what's bitcoin doing?”</span><span>“watch the Champions League”</span><span>“why did it move?”</span><span>“20 on no change”</span><span>“positions”</span><span>“alert at 3 points”</span>
-      </div></div>
-
-      <section class="block problem"><div class="wrap">
-        <div>
-          <span class="eyebrow">The problem</span>
-          <h2 style="margin:14px 0 16px">The odds move while your phone is in your pocket.</h2>
-          <p class="lead">A rate decision in Washington, an election in Brazil, a final in Madrid: prediction markets price the world in real time. Checking one still means five steps and both hands. In a meeting, on a run or on a call, you don't.</p>
-        </div>
-        <div class="chain">
-          <div><b>01</b>Take out your phone and unlock it</div>
-          <div><b>02</b>Open the app, wait for it to load</div>
-          <div><b>03</b>Search for the market</div>
-          <div><b>04</b>Scroll past the ones you don't care about</div>
-          <div><b>05</b>Wonder why it moved, open the news</div>
-          <div class="last"><b class="g">G2</b>Or: hold the ring, say it, glance.</div>
+        <div class="under-view">
+          <div class="seg" id="tabs" role="group" aria-label="Market shown"></div>
+          <p class="cap"><span><span class="live-dot"></span>Live Polymarket data</span><span id="when"></span></p>
         </div>
       </div></section>
 
       <section class="block" id="how"><div class="wrap">
         <div class="head">
-          <span class="eyebrow">How it works</span>
-          <h2>Hold. Say it. Glance.</h2>
-          <p class="lead">Everything runs from the ring or the temple touchpad. Hold anywhere to speak; tap to open or confirm; swipe to move between markets; double-tap to go back.</p>
+          <span class="kicker">How it works</span>
+          <h2>Hold. Say it. <em>Glance.</em></h2>
+          <p class="lead">Everything runs from the ring or the temple touchpad: hold anywhere to speak, tap to open or confirm, swipe to move between markets, double-tap to go back.</p>
         </div>
         <div class="steps">
           <div class="step">
-            <span class="num">01 · SAY ANY MARKET</span>
-            <div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:60px;padding:8px">Pick one · "champions league"</div><div class="g-list" style="left:0;top:60px;width:576px;height:228px"><div class="g-item on">UEFA Champions League 2027 Champion 23%</div><div class="g-item">Champions League: Arsenal vs Dortmund 61%</div><div class="g-item">Champions League top scorer 18%</div></div></div></div>
+            <div class="screen"><div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:60px;padding:8px">Pick one · "champions league"</div><div class="g-list" style="left:0;top:60px;width:576px;height:228px"><div class="g-item on">UEFA Champions League 2027 Champion 23%</div><div class="g-item">Champions League: Arsenal vs Dortmund 61%</div><div class="g-item">Champions League top scorer 18%</div></div></div></div></div>
+            <h3>Say any market</h3>
             <p class="say">“watch the Champions League”</p>
-            <p>Not a fixed menu: Odds searches every open Polymarket event and shows the three best matches. Tap one to follow it.</p>
+            <p>Not a fixed menu. Odds searches every open Polymarket event and offers the three best matches; tap one to follow it.</p>
           </div>
           <div class="step">
-            <span class="num">02 · GLANCE</span>
-            <div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">FED DECISION IN DECEMBER?
+            <div class="screen"><div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">FED DECISION IN DECEMBER?
 25 bps increase   62%  ▲7 1h
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ▁▁▂▂▃▄▄▅▆▇▇█  24h
 No change 35% · 50+ bps increase 3%
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ! Moved 7 pts in 1h
-Hold: speak · Swipe: next · 2×tap: back</div></div></div>
+Hold: speak · Swipe: next · 2×tap: back</div></div></div></div>
+            <h3>Glance</h3>
             <p class="say">swipe ↑ ↓</p>
-            <p>The leading outcome, its 1-hour change, a 24-hour line and the runners-up. Prices refresh every 15 seconds. Swipe for the next market you follow.</p>
+            <p>The leading outcome, its 1-hour change, a 24-hour line and the runners-up, refreshed every 15 seconds.</p>
           </div>
           <div class="step">
-            <span class="num">03 · ASK WHY, BET ON PAPER</span>
-            <div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:120px;padding:8px">PAPER BET
+            <div class="screen"><div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:120px;padding:8px">PAPER BET
 $20 on NO CHANGE @ 35¢
-Pays $57.14 if it happens</div><div class="g-list" style="left:0;top:120px;width:576px;height:168px"><div class="g-item on">Yes, place it</div><div class="g-item">No</div></div></div></div>
+Pays $57.14 if it happens</div><div class="g-list" style="left:0;top:120px;width:576px;height:168px"><div class="g-item on">Yes, place it</div><div class="g-item">No</div></div></div></div></div>
+            <h3>Bet on paper</h3>
             <p class="say">“20 on no change”</p>
-            <p>Say a stake and an outcome by name. Odds shows exactly what you said and waits for one tap. Your paper portfolio tracks live P&amp;L.</p>
+            <p>Say a stake and an outcome. Odds shows exactly what it heard and waits for one tap, gives you 10 seconds to undo, and settles the bet when the market resolves.</p>
           </div>
         </div>
-        <p class="small muted" style="margin-top:14px">Example screens. The live one at the top of this page and the simulator use real prices.</p>
       </div></section>
 
-      <section class="block why" style="padding-top:24px"><div class="wrap">
-        <div class="lens-frame">
-          <div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">WHAT PRICE WILL BITCOIN HIT IN 2026?
+      <section class="block"><div class="wrap split">
+        <div class="screen"><div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">WHAT PRICE WILL BITCOIN HIT IN 2026?
 ↓ 55,000   45%  ▲6 1h
 ━━━━━━━━━━━━━━━━━━━━━━━━
 █▇▇▆▆▆▅▅▅▄▄▄▃▃▂▂▂▁▁▂▂▃▃▄  24h
@@ -108,73 +100,90 @@ Pays $57.14 if it happens</div><div class="g-list" style="left:0;top:120px;width
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ! Moved 6 pts in 1h · Benzinga, 2h ago
 "Bitcoin Whipsaws Between $64,000 and
-$61,000 After Nvidia Bombshell"</div></div></div>
-          <p class="lens-cap"><span>Example screen with a real headline</span></p>
-        </div>
+$61,000 After Nvidia Bombshell"</div></div></div></div>
         <div>
-          <span class="eyebrow">Why did it move?</span>
-          <h2 style="margin:14px 0 16px">The headline behind the jump, right under the price.</h2>
-          <p class="lead">When a market moves past your alert line in an hour, Odds finds the latest headline that names it and puts it on the card. Or just ask “why did it move?”.</p>
-          <ul>
-            <li>Real headlines from the last 24 hours, with the outlet and how long ago.</li>
-            <li>No AI writes or picks the line. If nothing matches, it says “No news in 24h”.</li>
-            <li>Alert line is yours: “alert at 3 points”.</li>
+          <span class="kicker">Why did it move?</span>
+          <h2>The headline behind the jump, <em>right under the price.</em></h2>
+          <p class="lead">When a market moves past your alert line, Odds finds the latest headline that names it. Or just ask “why did it move?”.</p>
+          <ul class="ticks">
+            <li><b>Real headlines</b> from the last 24 hours, with the outlet and how long ago.</li>
+            <li><b>No AI writes or picks the line.</b> If nothing matches, it says “No news in 24h”.</li>
+            <li><b>Your alert line:</b> “alert at 3 points”.</li>
           </ul>
         </div>
       </div></section>
 
-      <section class="block" style="padding-top:24px"><div class="wrap">
-        <div class="head"><span class="eyebrow">What's inside</span><h2>Built for a 576 × 288 screen and one finger.</h2></div>
-        <div class="grid">
-          <div class="card wide"><div class="ico">“ ”</div><h3>Open-vocabulary voice</h3><p>Hold, speak naturally, let go. “What's bitcoin doing?”, “follow the Fed decision in December”, “put ten bucks on Arsenal”. Speech-to-text runs on our backend; a fixed rule set turns the words into an action.</p></div>
-          <div class="card"><div class="ico">↕</div><h3>Your watchlist</h3><p>Follow up to 20 events. Each row shows the leader, its price and the 1-hour change.</p></div>
-          <div class="card"><div class="ico">$</div><h3>Paper portfolio</h3><p>Bets at the live price, live P&amp;L, “close it” to sell at today's price. When a market resolves, the bet settles itself: WON pays $1 a share, LOST pays nothing.</p></div>
-          <div class="card"><div class="ico">!</div><h3>Move alerts, even when Odds is closed</h3><p>G2 shows one app at a time. Say “connect Telegram” and a big move on a market you follow, or a settled bet, reaches your phone. Next time you open Odds, it starts on that market.</p></div>
-          <div class="card"><div class="ico">✓</div><h3>Clean data</h3><p>Resolved markets and unpriced placeholder slots are filtered out, so the leader is always a real outcome.</p></div>
+      <section class="block" id="alerts"><div class="wrap split">
+        <div>
+          <span class="kicker">Alerts, even when Odds is closed</span>
+          <h2>G2 shows one app at a time. <em>The move still finds you.</em></h2>
+          <p class="lead">Say “connect Telegram” and tap the link on your phone. Odds checks the markets you follow every few minutes and messages you when one moves past your line, or when a paper bet settles.</p>
+          <ul class="ticks">
+            <li><b>Opens where it matters:</b> the next time you open Odds, it starts on the market that moved.</li>
+            <li><b>Settled bets:</b> won or lost, with the payout, the moment a market resolves.</li>
+            <li><b>Yours to stop:</b> “disconnect Telegram” or /stop deletes everything stored.</li>
+          </ul>
+        </div>
+        <div class="phone" aria-label="Example Telegram alert">
+          <div class="bar">
+            <div class="avatar"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 44 L26 32 L34 38 L50 20" fill="none" stroke="#3cfa44" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="20" r="6" fill="#3cfa44"/></svg></div>
+            <div class="who"><b>Odds Alerts</b><span>bot</span></div>
+          </div>
+          <div class="chat">
+            <div class="bubble"><b>Fed Decision in December?</b><br />25 bps increase: 60% → 68%, <span class="up">up 8 pts</span> since 14:05 UTC.<br /><br />Open Odds on your glasses: it starts on this market, with the chart and the latest headline.<time>14:31</time></div>
+            <div class="bubble"><b>Paper bet settled: WON</b><br />Bitcoin above 100k on December 31?<br />$20 on Yes at 40¢ → paid $50.00 (<span class="up">+$30.00</span>).<time>18:02</time></div>
+          </div>
+          <div class="then">
+            <p>Then, on your glasses</p>
+            <div class="screen"><div class="lens-box"><div class="lens fit"><div class="g-text" style="left:0;top:0;width:576px;height:288px;padding:8px">FED DECISION IN DECEMBER?
+25 bps increase   68%  ▲8 1h
+━━━━━━━━━━━━━━━━━━━━━━━━
+▁▁▂▂▃▃▄▅▅▆▇█  24h
+No change 30% · 50+ bps increase 2%
+━━━━━━━━━━━━━━━━━━━━━━━━
+Opened from your Telegram alert
+Hold: speak · Swipe: next · 2×tap: back</div></div></div></div>
+          </div>
         </div>
       </div></section>
 
-      <section class="block" id="who"><div class="wrap">
-        <div class="head"><span class="eyebrow">Who it's for</span><h2>People who already watch the odds, and can't keep a phone out.</h2></div>
-        <div class="grid">
-          <div class="card"><h3>Every day</h3><p>Traders and fans of prediction markets who follow a handful of live questions: a rate decision, a match, an election night, a crypto price. Odds is the glance between meetings, on a run, on a call.</p></div>
-          <div class="card"><h3>When it matters most</h3><p>The hour a market moves. The Telegram alert finds you wherever you are; the glasses then show the price, the trend and the headline without picking up a phone.</p></div>
-          <div class="card"><h3>What people would pay for</h3><p>Free: follow markets, paper bets, a few alerts a day. Pro, a few dollars a month: unlimited alerts, a line per market and a morning brief. Later, real orders with the same tap to confirm. None of the paid plan is built yet.</p></div>
+      <section class="block" id="safety"><div class="wrap">
+        <div class="head">
+          <span class="kicker">Who it's for, and why it's safe</span>
+          <h2>Built for the glance. <em>Careful with the money.</em></h2>
         </div>
-      </div></section>
-
-      <section class="block safety" id="safety"><div class="wrap">
-        <div class="head"><span class="eyebrow">Safety</span><h2>A voice can't spend your money.</h2><p class="lead">Voice is great for “show me” and dangerous for “do it”. So Odds keeps the doing on paper, and makes every step visible.</p></div>
-        <div class="rules">
-          <div class="rule"><span class="tick">✓</span><div><h3>Paper only</h3><p>No wallet, no keys, no real orders. Bets are a ledger in the glasses app's local storage.</p></div></div>
-          <div class="rule"><span class="tick">✓</span><div><h3>Rules, not a model, decide</h3><p>Amounts and outcomes come from your words by fixed rules. If it can't match an outcome exactly, it asks again instead of guessing.</p></div></div>
-          <div class="rule"><span class="tick">✓</span><div><h3>One tap to confirm</h3><p>Every bet shows stake, outcome, price and payout, then waits for “Yes, place it”.</p></div></div>
-          <div class="rule"><span class="tick">✓</span><div><h3>Silence is never sent</h3><p>Speech models invent words from silence. Odds checks the clip's loudness first and drops empty presses.</p></div></div>
+        <div class="duo">
+          <div class="panel">
+            <h3>Who it's for</h3>
+            <p class="muted">People who already follow prediction markets and can't keep a phone out.</p>
+            <ul class="ticks">
+              <li><b>Every day:</b> a handful of live questions (a rate decision, a match, an election night, a crypto price), checked between meetings, on a run, on a call.</li>
+              <li><b>When it matters:</b> the hour a market moves. The alert finds you; the glasses show the price, the trend and the headline.</li>
+              <li><b>What would pay for it:</b> free to follow and paper-trade; a Pro plan for unlimited alerts, a line per market and a morning brief. Not built yet.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>A voice can't spend your money</h3>
+            <p class="muted">Voice is great for “show me” and risky for “do it”, so the doing stays on paper.</p>
+            <ul class="ticks">
+              <li><b>Paper only:</b> no wallet, no keys, no real orders.</li>
+              <li><b>Rules, not a model, decide:</b> amounts and outcomes come from your words by fixed rules. No exact match, no bet.</li>
+              <li><b>One tap to confirm, 10 seconds to undo:</b> every bet shows stake, outcome, price and payout first.</li>
+              <li><b>Silence is never sent:</b> empty presses are dropped before speech-to-text, so nothing is invented.</li>
+            </ul>
+          </div>
         </div>
-      </div></section>
-
-      <section class="block"><div class="wrap">
-        <div class="head"><span class="eyebrow">Compared</span><h2>Why not just a phone, or a ticker?</h2></div>
-        <div class="table-wrap"><table>
-          <thead><tr><th></th><th>Market app on a phone</th><th>Fixed-feed glasses tickers</th><th class="us">Odds</th></tr></thead>
-          <tbody>
-            <tr><td>Hands and eyes free</td><td>No</td><td>Yes</td><td class="us y">Yes</td></tr>
-            <tr><td>Pick any market by voice</td><td>Typing</td><td>Top markets or fixed phrases</td><td class="us y">Say it in your words</td></tr>
-            <tr><td>Why it moved</td><td>Open a news app</td><td>No</td><td class="us y">Headline on the card</td></tr>
-            <tr><td>Bet by voice</td><td>Real money</td><td>Varies</td><td class="us y">Paper, one-tap confirm</td></tr>
-            <tr><td>Try without hardware</td><td>Yes</td><td>Sometimes</td><td class="us y">Full app in the browser</td></tr>
-          </tbody>
-        </table></div>
       </div></section>
 
       <section class="end"><div class="wrap">
-        <span class="eyebrow">No glasses needed</span>
-        <h2>Run the real app in your browser.</h2>
+        <span class="kicker">No glasses needed</span>
+        <h2>Run the real app <em>in your browser.</em></h2>
         <p class="lead">The same code that runs on G2, on a simulated 576 × 288 display. Hold the button and talk, or type.</p>
-        <div class="cta"><a class="btn btn-go" href="/try">Open the simulator</a><a class="btn btn-ghost" href="https://github.com/0xvikram/odds-g2">Read the code</a></div>
-        <p class="lead" style="margin-top:18px;font-size:15px">Have G2? <a href="/odds.ehpk" download>Download the Even Hub package (odds.ehpk, v0.2.1)</a> and sideload it with the Even app (2.2.10 or newer).</p>
+        <div class="cta"><a class="btn btn-go" href="/try">Open the simulator</a><a class="btn btn-line" href="/odds.ehpk" download>Install on G2 (.ehpk)</a><a class="btn btn-ghost" href="https://github.com/0xvikram/odds-g2">Read the code →</a></div>
+        <p class="fine">Package v0.2.1 · sideload with the Even app 2.2.10 or newer</p>
       </div></section>
     </main>
+
     <footer><div class="wrap">
       <div>Odds · live prediction-market odds for Even Realities G2.<br />Paper bets only. Not affiliated with Polymarket or Even Realities.</div>
       <nav><a href="/try">Try it</a><a href="/faq">FAQ</a><a href="/privacy">Privacy</a><a href="https://github.com/0xvikram/odds-g2">GitHub</a></nav>

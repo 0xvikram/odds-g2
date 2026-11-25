@@ -6,14 +6,14 @@ import { fit } from '../fit'
 const screen = document.getElementById('lens')!
 fit(screen)
 sim.el = screen
-const note = document.getElementById('sim-note')!
-sim.onMicError = () => { note.textContent = 'Microphone blocked. Type a command below instead.'; note.hidden = false }
+const note = document.getElementById('mic-note')!
+sim.onMicError = () => { note.textContent = 'Microphone blocked. Use the tour or type a command instead.'; note.hidden = false }
 sim.onClose = () => {
   screen.innerHTML = '<div class="g-closed">Odds closed (double-tap on the watchlist exits).<br><button type="button" id="restart">Open again</button></div>'
   document.getElementById('restart')!.onclick = () => location.reload()
 }
 
-document.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => (b.onclick = () => sim.input(b.dataset.act as Action)))
+document.querySelectorAll<HTMLButtonElement>('button[data-act]').forEach((b) => (b.onclick = () => sim.input(b.dataset.act as Action)))
 
 // Hold to talk: pointer, or hold the space bar.
 const talk = document.getElementById('talk')!
@@ -24,7 +24,8 @@ talk.addEventListener('pointerdown', (e) => { e.preventDefault(); talk.setPointe
 talk.addEventListener('pointerup', release)
 talk.addEventListener('pointercancel', release)
 talk.addEventListener('contextmenu', (e) => e.preventDefault())
-const typing = () => document.activeElement instanceof HTMLInputElement
+// Keys drive the ring unless the user is typing, or pressing Enter/Space on a focused button (that button wins).
+const typing = () => document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLButtonElement
 addEventListener('keydown', (e) => {
   if (typing()) return
   if (e.code === 'Space') { e.preventDefault(); if (!e.repeat) press() }
@@ -43,6 +44,21 @@ const say = (text: string) => {
   if (fn && text.trim()) void fn(text.trim())
 }
 form.onsubmit = (e) => { e.preventDefault(); say(field.value); field.value = ''; field.blur() }
-document.querySelectorAll<HTMLButtonElement>('[data-say]').forEach((b) => (b.onclick = () => say(b.dataset.say!)))
+document.querySelectorAll<HTMLButtonElement>('button[data-say]').forEach((b) => (b.onclick = () => say(b.dataset.say!)))
+
+// Guided tour: one step is current; its button runs the real command, then the next step lights up.
+const steps = [...document.querySelectorAll<HTMLLIElement>('#tour li')]
+function setStep(i: number) {
+  steps.forEach((li, j) => { li.classList.toggle('now', j === i); li.classList.toggle('done', j < i) })
+}
+steps.forEach((li, i) => {
+  li.querySelector('button')!.onclick = () => {
+    if (li.dataset.stepAct) sim.input(li.dataset.stepAct as Action)
+    else say(li.dataset.stepSay!)
+    setStep(Math.min(i + 1, steps.length))
+  }
+  li.onclick = (e) => { if (!(e.target as HTMLElement).closest('button')) setStep(i) }
+})
+setStep(0)
 
 await import('../../src/main')
