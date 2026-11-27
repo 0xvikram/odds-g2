@@ -16,7 +16,7 @@ import { parse, matchOutcome, type Intent } from './parse'
 import { getEvent, cachedEvent, search, getHistory, getNews, type EventData, type SearchHit, type Headline } from './api'
 import * as store from './store'
 import * as link from './link'
-import { card, confirmText, positionsText, settledLine, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
+import { card, confirmText, positionsText, settledLine, briefRow, since, watchRow, header, lead, nameOf, cut, shortTitle, pct, RULE } from './screens'
 
 mountUi()
 const bridge = await waitForEvenAppBridge()
@@ -28,6 +28,7 @@ type Screen =
   | { name: 'confirm'; eventId: string; stake: number; marketIdx: number; outcomeIdx: number; price: number; label: string; back: string }
   | { name: 'positions' }
   | { name: 'telegram' }
+  | { name: 'brief'; ids: string[] }
 
 let screen: Screen = { name: 'home' }
 let listItems: string[] = [] // what the current list shows, to map a tap back to an action
@@ -88,6 +89,39 @@ async function showHome(note = '') {
   await Promise.allSettled(watch.map((w) => getEvent(w.id)))
   const rows = watch.map((w) => watchRow(w.title, cachedEvent(w.id)))
   await listPage(note || header(`ODDS · ${watch.length} watching`), rows)
+  markAllSeen()
+}
+
+/** Remember what each followed market shows now, so the next open can say what moved since. */
+function markAllSeen() {
+  for (const w of store.getWatch()) {
+    const e = cachedEvent(w.id); const m = e && lead(e)
+    if (m) store.markSeen(w.id, { marketId: m.id, label: nameOf(e!, m), price: m.prices[0], at: Date.now() })
+  }
+}
+
+/**
+ * Since you last looked: on open, the followed markets that moved 2+ points since the user last saw them,
+ * biggest first. Tap one to open its card (where "why did it move" is one hold away); double-tap for the watchlist.
+ * Returns false when nothing moved enough, so the caller shows the watchlist instead.
+ */
+const BRIEF_MIN_PTS = 2
+async function showBrief(): Promise<boolean> {
+  const watch = store.getWatch(), seen = store.getSeen()
+  if (!watch.length || !Object.keys(seen).length) return false
+  await Promise.allSettled(watch.map((w) => getEvent(w.id)))
+  const moved = watch.flatMap((w) => {
+    const s = seen[w.id], e = cachedEvent(w.id)
+    const m = e?.markets.find((x) => x.id === s?.marketId)
+    if (!s || !e || !m || Date.now() - s.at < 10 * 60000) return []
+    const pts = Math.abs(m.prices[0] - s.price) * 100
+    return pts >= BRIEF_MIN_PTS ? [{ id: w.id, row: briefRow(e.title, s.label, s.price, m.prices[0]), pts, at: s.at }] : []
+  }).sort((a, b) => b.pts - a.pts).slice(0, 4)
+  if (!moved.length) return false
+  screen = { name: 'brief', ids: moved.map((x) => x.id) }
+  const oldest = Math.min(...moved.map((x) => x.at))
+  await listPage(header(`SINCE YOU LOOKED · ${since(oldest)}`), moved.map((x) => x.row))
+  return true
 }
 
 async function showSearch(query: string, hits: SearchHit[]) {
@@ -223,6 +257,7 @@ async function redraw() {
     case 'confirm': return showConfirm(screen)
     case 'positions': return showPositions()
     case 'telegram': return showTelegram()
+    case 'brief': return showHome()
   }
 }
 
@@ -237,6 +272,9 @@ async function openSelected(index: number) {
     if (!h) return
     store.follow({ id: h.id, title: h.title })
     await showCard(h.id)
+  } else if (screen.name === 'brief') {
+    const id = screen.ids[index]
+    if (id) await showCard(id)
   } else if (screen.name === 'confirm') {
     if (index === 0) await placeBet(screen)
     else await showCard(screen.eventId, 'Cancelled. Nothing placed.')
@@ -416,7 +454,7 @@ function cleanup() {
 window.addEventListener('beforeunload', cleanup)
 
 setStatus('paused', 'Hold the touchpad or ring to speak · double-tap to go back')
-await showHome()
+if (!(await showBrief().catch(() => false))) await showHome()
 void settleAndAnnounce() // bets whose market resolved while the app was closed
 void openFromAlert()
 
@@ -425,5 +463,5 @@ async function openFromAlert() {
   const s = await link.status().catch(() => null)
   if (!s?.linked) return
   void link.pushState() // the watchlist may have changed on another screen while offline
-  if (s.pending && store.getWatch().some((w) => w.id === s.pending) && screen.name === 'home') await showCard(s.pending, 'Opened from your Telegram alert')
+  if (s.pending && store.getWatch().some((w) => w.id === s.pending) && (screen.name === 'home' || screen.name === 'brief')) await showCard(s.pending, 'Opened from your Telegram alert')
 }

@@ -25,6 +25,7 @@ export interface SettledLike { id: string; winner: number | null }
 const KEY_WATCH = 'odds.watch.v1'
 const KEY_POS = 'odds.positions.v1'
 const KEY_ALERT = 'odds.alertPts.v1'
+const KEY_SEEN = 'odds.seen.v1'
 
 /** First run: three demo events with daily movement (picked 22 Nov; prices are always live). */
 const DEFAULT_WATCH: Watched[] = [
@@ -60,6 +61,15 @@ export function follow(w: Watched) {
 export function unfollow(id: string) {
   watch = watch.filter((x) => x.id !== id)
   write(KEY_WATCH, watch)
+}
+
+/** The price each followed event showed the last time the user looked, for "since you last looked". */
+export interface Seen { marketId: string; label: string; price: number; at: number }
+let seen = read<Record<string, Seen>>(KEY_SEEN, {})
+export const getSeen = () => seen
+export function markSeen(eventId: string, s: Seen) {
+  seen = { ...seen, [eventId]: s }
+  try { localStorage.setItem(KEY_SEEN, JSON.stringify(seen)) } catch { /* storage blocked: keep going in memory */ }
 }
 
 export const getAlertPts = () => alertPts

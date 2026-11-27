@@ -155,4 +155,16 @@ export function settledLine(p: Position): string {
   return cut(`Settled: ${p.result === 'won' ? 'WON' : 'LOST'} ${cut(p.label, 14)} ${money(pnl)}`, 44)
 }
 
+/** One "since you last looked" row: "Fed decision: 25 bps 88%→92% ▲4". */
+export function briefRow(title: string, label: string, from: number, to: number): string {
+  const pts = Math.round((to - from) * 100)
+  return cut(`${shortTitle(title, 20)}: ${cut(label, 12)} ${Math.round(from * 100)}%→${Math.round(to * 100)}% ${pts > 0 ? '▲' : '▼'}${Math.abs(pts)}`, 62)
+}
+
+/** "3h ago" / "2d ago" for the brief header. */
+export function since(at: number, now = Date.now()): string {
+  const m = Math.max(1, Math.round((now - at) / 60000))
+  return m < 60 ? `${m}m ago` : m < 2880 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`
+}
+
 export const money = (x: number) => `${x < 0 ? '-' : '+'}$${Math.abs(x).toFixed(2)}`
